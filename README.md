@@ -12,7 +12,7 @@ bignum.hpp is a header-only library for the following bignum arithmetic over int
 
 ## How to use
 ```
-#include "bigint.hpp"
+#include "bignum.hpp"
 montgomery_multiplication<uint64_t,uint128_t,4>(x,y,m,inv,out);
 // How to compile:
 g++ myprogram.cpp -o myprogram -w -I/path/to/header/file's/directory
