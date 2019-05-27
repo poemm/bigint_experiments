@@ -1,8 +1,8 @@
 bignum.hpp is a header-only library for the following bignum arithmetic over integers:
-  addition without an extra carry limb
-  subtraction for lhs<=rhs
-  comparisons < and <=
-  montogmery multiplication
+ - addition without an extra carry limb
+ - subtraction for lhs<=rhs
+ - comparisons < and <=
+ - montogmery multiplication
 
 ## Goals of this library
  - Support arbitrarily many limbs and multiple limb sizes. For example, newer architectures support multiplication like u64xu64->u128, but we also support u32xu32->u64 for compatibility with things like Wasm 1.0.
