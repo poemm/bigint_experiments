@@ -1,6 +1,6 @@
 bignum.hpp is a header-only library for the following bignum arithmetic over integers:
  - addition without an extra carry limb
- - subtraction for lhs<=rhs
+ - subtraction for lhs>=rhs
  - comparisons < and <=
  - montogmery multiplication
 
