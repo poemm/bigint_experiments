@@ -33,6 +33,14 @@ void* memcpy(void* __restrict destination, const void* __restrict source, size_t
 
 
 extern "C" {
+void montmul256_32bitlimbs(uint32_t* x, uint32_t* y, uint32_t* m, uint32_t* inv, uint32_t* out){
+  montgomery_multiplication<uint32_t,uint64_t,8>(x,y,m,inv,out);
+}
+
+void montmul256_64bitlimbs(uint64_t* x, uint64_t* y, uint64_t* m, uint64_t* inv, uint64_t* out){
+  montgomery_multiplication<uint64_t,uint128_t,4>(x,y,m,inv,out);
+}
+
 void montmul768_32bitlimbs(uint32_t* x, uint32_t* y, uint32_t* m, uint32_t* inv, uint32_t* out){
   montgomery_multiplication<uint32_t,uint64_t,24>(x,y,m,inv,out);
 }

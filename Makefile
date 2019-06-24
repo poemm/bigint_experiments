@@ -30,7 +30,7 @@ export BINARYEN_DIR := ~/repos/binaryen/binaryen-version_81/
 export OPT := -O0
 
 
-default: wasm/montmul768.wasm
+default: wasm/montmul.wasm
 
 # dependencies checks and installation
 
@@ -85,29 +85,29 @@ endif
 
 
 # Build, convert, optimize
-wasm/montmul768.wasm:
+wasm/montmul.wasm:
 	# build
-	$(LLVM)clang -cc1 $(OPT) -emit-llvm -triple=wasm32-unknown-unknown-wasm wasm/montmul768.cpp -o montmul768.ll
-	$(LLVM)opt $(OPT) montmul768.ll -o montmul768.ll
-	$(LLVM)llc $(OPT) -filetype=obj montmul768.ll -o montmul768.o
+	$(LLVM)clang -cc1 $(OPT) -emit-llvm -triple=wasm32-unknown-unknown-wasm wasm/montmul.cpp -o montmul.ll
+	$(LLVM)opt $(OPT) montmul.ll -o montmul.ll
+	$(LLVM)llc $(OPT) -filetype=obj montmul.ll -o montmul.o
 	# get builtin __multi3() to link against
 ifeq (, $(shell if [ -e wasm/lib/wasi/libclang_rt.builtins-wasm32.a ] ; then echo blah ; fi;))
 	cd wasm; wget https://github.com/CraneStation/wasi-sdk/releases/download/wasi-sdk-5/libclang_rt.builtins-wasm32-wasi-5.0.tar.gz
 	cd wasm; tar -xvzf libclang_rt.builtins-wasm32-wasi-5.0.tar.gz
 endif
-	$(LLVM)wasm-ld montmul768.o -o montmul768.wasm --no-entry -export=montmul768_32bitlimbs -export=montmul768_64bitlimbs wasm/lib/wasi/libclang_rt.builtins-wasm32.a
+	$(LLVM)wasm-ld montmul.o -o montmul.wasm --no-entry -export=montmul256_32bitlimbs -export=montmul256_64bitlimbs -export=montmul768_32bitlimbs -export=montmul768_64bitlimbs wasm/lib/wasi/libclang_rt.builtins-wasm32.a
 	# done compiling, save text version
-	$(WABT_DIR)wasm2wat montmul768.wasm > montmul768.wat
-	$(WABT_DIR)wat2wasm montmul768.wat > montmul768.wasm
+	$(WABT_DIR)wasm2wat montmul.wasm > montmul.wat
+	$(WABT_DIR)wat2wasm montmul.wat > montmul.wasm
 	# size optimize
-	$(BINARYEN_DIR)wasm-opt $(OPT) montmul768.wasm -o montmul768_optimized.wasm
+	$(BINARYEN_DIR)wasm-opt $(OPT) montmul.wasm -o montmul_optimized.wasm
 	# save text format of final ewasm contract
-	$(WABT_DIR)wasm2wat montmul768_optimized.wasm > montmul768_optimized.wat
+	$(WABT_DIR)wasm2wat montmul_optimized.wasm > montmul_optimized.wat
 	# save everything to wasm directory
 	mv *.wasm wasm/
 	mv *.wat wasm/
 	# remove intermediate files
-	rm -f montmul768.ll montmul768.o
+	rm -f montmul.ll montmul.o
 
 
 clean:
