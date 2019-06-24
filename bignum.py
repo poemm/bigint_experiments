@@ -1,6 +1,6 @@
 """
 
-This python code is for prototyping before implementing in bignum.cpp.
+This python code is for prototyping before implementing in bignum.hpp.
 
 """
 

@@ -1,7 +1,9 @@
 
+#if !WASM
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
+#endif
 
 
 typedef unsigned __int128 uint128_t;
