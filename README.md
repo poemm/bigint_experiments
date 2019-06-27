@@ -1,4 +1,4 @@
-`bignum.h` (translated from `bitnum.py`) is a library for the following bignum arithmetic over integers:
+`bignum.h` (translated from `bignum.py`) is a library for the following bignum arithmetic over integers:
  - addition without an extra carry limb
  - subtraction for lhs>=rhs
  - comparisons < and <=
