@@ -1,117 +1,34 @@
-#
-#    Copyright 2019 Paul Dworzanski et al.
-#
-#    This file is part of c_ewasm_contracts.
-#
-#    c_ewasm_contracts is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
-#
-#    c_ewasm_contracts is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
-#
-#    You should have received a copy of the GNU General Public License
-#    along with c_ewasm_contracts.  If not, see <https://www.gnu.org/licenses/>.
-#
 
+default: bench
 
-# all of these exports can be passed as command-line arguments to make
-
-# paths to tools
-export LLVM := /home/user/repos/llvm9/llvm-project/build/bin/
-#export LLVM := llvm-project/build/bin
-#export LLVM := 
-export WABT_DIR := ~/repos/wabt/wabt-1.0.10/
-export BINARYEN_DIR := ~/repos/binaryen/binaryen-version_81/
-
-export OPT := -O0
-
-
-default: wasm/montmul.wasm
-
-# dependencies checks and installation
-
-wabt-install:
-	git clone https://github.com/webassembly/wabt.git
-	mkdir wabt/build
-	cd wabt/build; cmake .. -DBUILD_TESTS=OFF
-	cd wabt/build; make -j4
-	touch wabt.READY
-
-binaryen-install:
-	git clone https://github.com/WebAssembly/binaryen.git
-	cd binaryen; mkdir build
-	cd binaryen/build; cmake ..
-	cd binaryen/build; make -j4
-
-llvm-install:
-	# WARNING: should do this manually. Downloads a lot, requires a lot of system resources, and takes a long time. Might require restarting with `make` again if compilation has an error.
-	git clone https://github.com/llvm/llvm-project.git
-	cd llvm-project; mkdir build
-	cd llvm-project/build; cmake -G 'Unix Makefiles' -DLLVM_ENABLE_PROJECTS="clang;libcxx;libcxxabi;lld" ../llvm
-	cd llvm-project/build; make -j4
-
-install: wabt-install binaryen-install pywebassembly-install
-	#WARNING: this does not include llvm-install because this should be done manually
-
-wabt-check:
-ifeq (, $(shell which $(WABT_DIR)/wasm2wat))
-	$(error "ERROR: Could not find wabt with wasm2wat, install it yourself and adjust path WABT_DIR in this makefile, or just install it with `make wabt-install`, and try again.")
-endif
-
-binaryen-check:
-ifeq (, $(shell which $(BINARYEN_DIR)wasm-opt))
-	$(error "ERROR: Could not find binaryen with wasm-dis, install it yourself and adjust path BINARYEN_DIR in this makefile, or just install it with `make binaryen-install`, and try again.")
-endif
-
-export LLVM_ERROR := "ERROR: Could not find llvm8+, install it yourself and adjust path LLVM_DIR in this makefile. It can also be found in some repositories. Install it yourself with `make llvm-install`, but this may fail and you should do it manually. WARNNG: 600MB+ download size, needs lots of RAM/disk to compile, compilation may fail the first try so need to restart multiple times.")
-
-llvm-check:
-ifeq (, $(shell which $(LLVM)clang))
-	$(error $(LLVM_ERROR))
-endif
-ifeq (, $(shell which $(LLVM)opt))
-	$(error $(LLVM_ERROR))
-endif
-ifeq (, $(shell which $(LLVM)lld))
-	$(error $(LLVM_ERROR))
-endif
-ifeq (, $(shell which $(LLVM)wasm-ld))
-	$(error $(LLVM_ERROR))
-endif
-
-
-# Build, convert, optimize
-wasm/montmul.wasm:
-	# build
-	$(LLVM)clang -cc1 $(OPT) -emit-llvm -triple=wasm32-unknown-unknown-wasm wasm/montmul.cpp -o montmul.ll
-	$(LLVM)opt $(OPT) montmul.ll -o montmul.ll
-	$(LLVM)llc $(OPT) -filetype=obj montmul.ll -o montmul.o
-	# get builtin __multi3() to link against
-ifeq (, $(shell if [ -e wasm/lib/wasi/libclang_rt.builtins-wasm32.a ] ; then echo blah ; fi;))
-	cd wasm; wget https://github.com/CraneStation/wasi-sdk/releases/download/wasi-sdk-5/libclang_rt.builtins-wasm32-wasi-5.0.tar.gz
-	cd wasm; tar -xvzf libclang_rt.builtins-wasm32-wasi-5.0.tar.gz
-endif
-	$(LLVM)wasm-ld montmul.o -o montmul.wasm --no-entry -export=montmul256_32bitlimbs -export=montmul256_64bitlimbs -export=montmul768_32bitlimbs -export=montmul768_64bitlimbs wasm/lib/wasi/libclang_rt.builtins-wasm32.a
-	# done compiling, save text version
-	$(WABT_DIR)wasm2wat montmul.wasm > montmul.wat
-	$(WABT_DIR)wat2wasm montmul.wat > montmul.wasm
-	# size optimize
-	$(BINARYEN_DIR)wasm-opt $(OPT) montmul.wasm -o montmul_optimized.wasm
-	# save text format of final ewasm contract
-	$(WABT_DIR)wasm2wat montmul_optimized.wasm > montmul_optimized.wat
-	# save everything to wasm directory
-	mv *.wasm wasm/
-	mv *.wat wasm/
-	# remove intermediate files
-	rm -f montmul.ll montmul.o
-
-
-clean:
-	rm wasm/*.wasm wasm/*.wat
-
-.PHONY: default all
+bench:
+	gcc montmul_bencher_and_tester.c -o montmul_bencher_gcc_32bit_8limb -w -DBIGINT_BITS=256 -DLIMB_BITS=32 -DLIMB_BITS_OVERFLOW=64
+	gcc montmul_bencher_and_tester.c -o montmul_bencher_gcc_32bit_24limb -w -DBIGINT_BITS=768 -DLIMB_BITS=32 -DLIMB_BITS_OVERFLOW=64
+	clang montmul_bencher_and_tester.c -o montmul_bencher_clang_32bit_8limb -w -DBIGINT_BITS=256 -DLIMB_BITS=32 -DLIMB_BITS_OVERFLOW=64
+	clang montmul_bencher_and_tester.c -o montmul_bencher_clang_32bit_24limb -w -DBIGINT_BITS=768 -DLIMB_BITS=32 -DLIMB_BITS_OVERFLOW=64
+	gcc montmul_bencher_and_tester.c -o montmul_bencher_gcc_64bit_4limb -w -DBIGINT_BITS=256 -DLIMB_BITS=64 -DLIMB_BITS_OVERFLOW=128
+	gcc montmul_bencher_and_tester.c -o montmul_bencher_gcc_64bit_12limb -w -DBIGINT_BITS=768 -DLIMB_BITS=64 -DLIMB_BITS_OVERFLOW=128
+	clang montmul_bencher_and_tester.c -o montmul_bencher_clang_64bit_4limb -w -DBIGINT_BITS=256 -DLIMB_BITS=64 -DLIMB_BITS_OVERFLOW=128
+	clang montmul_bencher_and_tester.c -o montmul_bencher_clang_64bit_12limb -w -DBIGINT_BITS=768 -DLIMB_BITS=64 -DLIMB_BITS_OVERFLOW=128
+	echo ---------------------------------
+	echo montgomery multiplication 256-bit
+	echo 8 32-bit limbs using gcc
+	time -f "\t%E real,\t%U user,\t%S sys" ./montmul_bencher_gcc_32bit_8limb 0x3f1c1f052ec7fcf3ae9235e365227456e0aad70660a12b598614c8fa584a1535 0x727b764436a7fbecec677e27eb8adb718ac19edf0412d4cb3b744672b7a302c7 0x30644e72e131a029b85045b68181585d97816a916871ca8d3c208c16d87cfd47 0x2ddccb3fa965bcb892d206fbf462e21f9ede7d651eca6ac987d20782e4866389 0x2d9e16714fc4fd748028191997556608dd3674723007b6a6303982d89a84056
+	echo 8 32-bit limbs using clang
+	time -f "\t%E real,\t%U user,\t%S sys" ./montmul_bencher_clang_32bit_8limb 0x3f1c1f052ec7fcf3ae9235e365227456e0aad70660a12b598614c8fa584a1535 0x727b764436a7fbecec677e27eb8adb718ac19edf0412d4cb3b744672b7a302c7 0x30644e72e131a029b85045b68181585d97816a916871ca8d3c208c16d87cfd47 0x2ddccb3fa965bcb892d206fbf462e21f9ede7d651eca6ac987d20782e4866389 0x2d9e16714fc4fd748028191997556608dd3674723007b6a6303982d89a84056
+	echo 4 64-bit limbs using gcc
+	time -f "\t%E real,\t%U user,\t%S sys" ./montmul_bencher_gcc_64bit_4limb 0x3f1c1f052ec7fcf3ae9235e365227456e0aad70660a12b598614c8fa584a1535 0x727b764436a7fbecec677e27eb8adb718ac19edf0412d4cb3b744672b7a302c7 0x30644e72e131a029b85045b68181585d97816a916871ca8d3c208c16d87cfd47 0x2ddccb3fa965bcb892d206fbf462e21f9ede7d651eca6ac987d20782e4866389 0x2d9e16714fc4fd748028191997556608dd3674723007b6a6303982d89a84056
+	echo 4 64-bit limbs using clang
+	time -f "\t%E real,\t%U user,\t%S sys" ./montmul_bencher_clang_64bit_4limb 0x3f1c1f052ec7fcf3ae9235e365227456e0aad70660a12b598614c8fa584a1535 0x727b764436a7fbecec677e27eb8adb718ac19edf0412d4cb3b744672b7a302c7 0x30644e72e131a029b85045b68181585d97816a916871ca8d3c208c16d87cfd47 0x2ddccb3fa965bcb892d206fbf462e21f9ede7d651eca6ac987d20782e4866389 0x2d9e16714fc4fd748028191997556608dd3674723007b6a6303982d89a84056
+	echo ---------------------------------
+	echo montgomery multiplication 768-bit
+	echo 24 32-bit limbs using gcc
+	time -f "\t%E real,\t%U user,\t%S sys" ./montmul_bencher_gcc_32bit_24limb  0x18519fba4b3fd2b923f780582a66fa8474c6540a788c17cd09d3ab98beb4ce0c28af644a4a0c57687e11420de74462834423d404fdcb1b6883b2befb4b872c689b799f2600a6ba8fa35238e8c6337638e2686a236e6b8195aa3d13f283c534e1 0x588e86f098891064643bef202ea0a4625409fad9e4586e0dbacfe9309cb0678d0a131a8c90e103267f389aa9acae00ded5fa966c37550c9bf0897ef3ff61524bf2f82d8369f6cfb8ce2a0b600a4a7009356aa635e99a3b03c367e8b89f1bdaea 0x1c4c62d92c41110229022eee2cdadb7f997505b8fafed5eb7e8f96c97d87307fdb925e8a0ed8d99d124d9a15af79db26c5c28c859a99b3eebca9429212636b9dff97634993aa4d6c381bc3f0057974ea099170fa13a4fd90776e240000001 0x1ca8d9105b396c8b26f9de60c2f805ec55f11b8452e51525f17af3144d2288b60dbe0076f54231fbd6b213d679f81291f14d3dc5311a484986a3d163f2c2de3107fb1f51969f35795f3f7d6484182adb37525ab8c5f5ac90776e23fffffff 0x8694766676aa2552940df17a6096ec6262699ff5252483f7e2e45b99a6727a987f1dc33d0c989c4481b7ac50601aa0b359b49b556d05ca311a04d8bf7074724039c1169a3474b14da11d5e67401b4108529d2aac696641e8234a2f3ae03ad1f
+	echo 24 32-bit limbs using clang
+	time -f "\t%E real,\t%U user,\t%S sys" ./montmul_bencher_clang_32bit_24limb  0x18519fba4b3fd2b923f780582a66fa8474c6540a788c17cd09d3ab98beb4ce0c28af644a4a0c57687e11420de74462834423d404fdcb1b6883b2befb4b872c689b799f2600a6ba8fa35238e8c6337638e2686a236e6b8195aa3d13f283c534e1 0x588e86f098891064643bef202ea0a4625409fad9e4586e0dbacfe9309cb0678d0a131a8c90e103267f389aa9acae00ded5fa966c37550c9bf0897ef3ff61524bf2f82d8369f6cfb8ce2a0b600a4a7009356aa635e99a3b03c367e8b89f1bdaea 0x1c4c62d92c41110229022eee2cdadb7f997505b8fafed5eb7e8f96c97d87307fdb925e8a0ed8d99d124d9a15af79db26c5c28c859a99b3eebca9429212636b9dff97634993aa4d6c381bc3f0057974ea099170fa13a4fd90776e240000001 0x1ca8d9105b396c8b26f9de60c2f805ec55f11b8452e51525f17af3144d2288b60dbe0076f54231fbd6b213d679f81291f14d3dc5311a484986a3d163f2c2de3107fb1f51969f35795f3f7d6484182adb37525ab8c5f5ac90776e23fffffff 0x8694766676aa2552940df17a6096ec6262699ff5252483f7e2e45b99a6727a987f1dc33d0c989c4481b7ac50601aa0b359b49b556d05ca311a04d8bf7074724039c1169a3474b14da11d5e67401b4108529d2aac696641e8234a2f3ae03ad1f
+	echo 12 64-bit limbs using gcc
+	time -f "\t%E real,\t%U user,\t%S sys" ./montmul_bencher_gcc_64bit_12limb  0x18519fba4b3fd2b923f780582a66fa8474c6540a788c17cd09d3ab98beb4ce0c28af644a4a0c57687e11420de74462834423d404fdcb1b6883b2befb4b872c689b799f2600a6ba8fa35238e8c6337638e2686a236e6b8195aa3d13f283c534e1 0x588e86f098891064643bef202ea0a4625409fad9e4586e0dbacfe9309cb0678d0a131a8c90e103267f389aa9acae00ded5fa966c37550c9bf0897ef3ff61524bf2f82d8369f6cfb8ce2a0b600a4a7009356aa635e99a3b03c367e8b89f1bdaea 0x1c4c62d92c41110229022eee2cdadb7f997505b8fafed5eb7e8f96c97d87307fdb925e8a0ed8d99d124d9a15af79db26c5c28c859a99b3eebca9429212636b9dff97634993aa4d6c381bc3f0057974ea099170fa13a4fd90776e240000001 0x1ca8d9105b396c8b26f9de60c2f805ec55f11b8452e51525f17af3144d2288b60dbe0076f54231fbd6b213d679f81291f14d3dc5311a484986a3d163f2c2de3107fb1f51969f35795f3f7d6484182adb37525ab8c5f5ac90776e23fffffff 0x8694766676aa2552940df17a6096ec6262699ff5252483f7e2e45b99a6727a987f1dc33d0c989c4481b7ac50601aa0b359b49b556d05ca311a04d8bf7074724039c1169a3474b14da11d5e67401b4108529d2aac696641e8234a2f3ae03ad1f
+	echo 12 64-bit limbs using clang
+	time -f "\t%E real,\t%U user,\t%S sys" ./montmul_bencher_clang_64bit_12limb  0x18519fba4b3fd2b923f780582a66fa8474c6540a788c17cd09d3ab98beb4ce0c28af644a4a0c57687e11420de74462834423d404fdcb1b6883b2befb4b872c689b799f2600a6ba8fa35238e8c6337638e2686a236e6b8195aa3d13f283c534e1 0x588e86f098891064643bef202ea0a4625409fad9e4586e0dbacfe9309cb0678d0a131a8c90e103267f389aa9acae00ded5fa966c37550c9bf0897ef3ff61524bf2f82d8369f6cfb8ce2a0b600a4a7009356aa635e99a3b03c367e8b89f1bdaea 0x1c4c62d92c41110229022eee2cdadb7f997505b8fafed5eb7e8f96c97d87307fdb925e8a0ed8d99d124d9a15af79db26c5c28c859a99b3eebca9429212636b9dff97634993aa4d6c381bc3f0057974ea099170fa13a4fd90776e240000001 0x1ca8d9105b396c8b26f9de60c2f805ec55f11b8452e51525f17af3144d2288b60dbe0076f54231fbd6b213d679f81291f14d3dc5311a484986a3d163f2c2de3107fb1f51969f35795f3f7d6484182adb37525ab8c5f5ac90776e23fffffff 0x8694766676aa2552940df17a6096ec6262699ff5252483f7e2e45b99a6727a987f1dc33d0c989c4481b7ac50601aa0b359b49b556d05ca311a04d8bf7074724039c1169a3474b14da11d5e67401b4108529d2aac696641e8234a2f3ae03ad1f
+	rm montmul_bencher_clang* montmul_bencher_gcc*
 
