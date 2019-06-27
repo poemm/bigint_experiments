@@ -143,7 +143,7 @@ void FUNCNAME(montmul)(UINT* restrict x, UINT* restrict y, UINT* restrict m, UIN
   }
 
   // instead of right shift, we just get the correct values
-  #pragma unroll
+  //#pragma unroll
   for (int i=0; i<N;i++)
     out[i] = A[i+N];
 
