@@ -2,6 +2,9 @@
  - addition without an extra carry limb
  - subtraction for lhs>=rhs
  - comparisons < and <=
+ - squaring
+ - montogmery reduction
+ - montogmery squaring
  - montogmery multiplication
 
 ## Goals of this library

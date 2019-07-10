@@ -111,6 +111,78 @@ UINT FUNCNAME(less_than_or_equal)(UINT* restrict x, UINT* restrict y){
   return 1;
 }
 
+// algorithm 14.16, Handbook of Applied Cryptography, http://cacr.uwaterloo.ca/hac/about/chap14.pdf
+// N is t (number of limbs) in the book, and the base is UINT*, usually uint32_t or uint64_t
+// output out should have double the limbs of input x
+void FUNCNAME(square)(UINT* x, UINT* out){
+  UINT2 w[N*2];
+  for (int i=0; i< 2*N; i++)
+    w[i]=0;
+  for (int i=0; i<N; i++){
+    UINT2 uv = (UINT2)w[2*i]+(UINT2)x[i]*x[i];
+    UINT2 u = uv >> LIMB_BITS;
+    UINT v = uv; // % LIMB_BITS;
+    w[2*i] = v;
+    UINT2 c = u;
+    for (int j=i+1; j<N; j++){
+      uv = (UINT2)w[i+j]+2*(UINT2)x[j]*x[i]+c;
+      u = uv >> LIMB_BITS;
+      v = uv;
+      w[i+j] = v;
+      c = u;
+    }
+    w[i+N] = u;
+  }
+  for (int i=0; i< 2*N; i++)
+    out[i]=w[i];
+  
+}
+
+// algorithm 14.32, Handbook of Applied Cryptography, http://cacr.uwaterloo.ca/hac/about/chap14.pdf
+void FUNCNAME(montreduce)(UINT*T, UINT* m, UINT* minv, UINT* out){
+
+  UINT* A = T;
+  for (int i=0; i<N; i++){
+    UINT ui = A[i]*minv[0];
+    UINT2 carry=0;
+    UINT2 sum;
+    int j;
+    for (j=0; j<N; j++){
+      UINT uimj = ui*m[j];
+      sum = (UINT2) A[i+j] + uimj + carry;
+      A[i+j] = sum; // % b;
+      carry = sum >> LIMB_BITS; // b
+    }
+    // carry may be nonzero, so keep carrying
+    int k=1;
+    while (carry && i+j+k<2*N){
+      sum = A[i+j+k]+carry;
+      A[i+j+k] = sum; //% b
+      carry = sum >> LIMB_BITS; // b
+      k+=1;
+    }
+  }
+
+  // instead of right shift, we just get the correct values
+  //#pragma unroll
+  for (int i=0; i<N; i++)
+    out[i] = A[i+N];
+
+  // final subtraction, first see if necessary
+  if (FUNCNAME(less_than_or_equal)(m,out)){
+    FUNCNAME(subtract)(out, m, out);
+  }
+}
+
+
+void FUNCNAME(montsquare)(UINT* restrict x, UINT* restrict out, UINT* restrict m, UINT* restrict inv){
+  UINT out_internal[N*2];
+  FUNCNAME(square)(x, out_internal);
+  FUNCNAME(montreduce)(x, out_internal, m, inv);
+  for (int i=0; i<N; i++){
+    out[i] = out_internal[i];
+  }
+}
 
 // algorithm 14.36, Handbook of Applied Cryptography, http://cacr.uwaterloo.ca/hac/about/chap14.pdf
 void FUNCNAME(montmul)(UINT* restrict x, UINT* restrict y, UINT* restrict m, UINT* restrict inv, UINT* restrict out){

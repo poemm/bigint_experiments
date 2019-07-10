@@ -142,6 +142,61 @@ montmul_unoptimized:
 
 montmul_all: montmul_speed_optimized montmul_size_optimized montmul_unoptimized
 
+montsquare:
+	# build
+	$(LLVM)clang -cc1 $(OPTIMIZATION_CLANG) -emit-llvm -triple=wasm32-unknown-unknown-wasm montsquare.c -o montsquare.ll
+	$(LLVM)opt $(OPTIMIZATION_OPT) montsquare.ll -o montsquare.ll
+	$(LLVM)llc $(OPTIMIZATION_LLC) -filetype=obj montsquare.ll -o montsquare.o
+	# get builtin __multi3() to link against
+ifeq (, $(shell if [ -e lib/wasi/libclang_rt.builtins-wasm32.a ] ; then echo blah ; fi;))
+	wget https://github.com/CraneStation/wasi-sdk/releases/download/wasi-sdk-5/libclang_rt.builtins-wasm32-wasi-5.0.tar.gz
+	tar -xvzf libclang_rt.builtins-wasm32-wasi-5.0.tar.gz
+endif
+	$(LLVM)wasm-ld $(OPTIMIZATION_WASM_LD) montsquare.o -o montsquare.wasm --no-entry lib/wasi/libclang_rt.builtins-wasm32.a -export=montsquare256_32bitlimbs -export=montsquare768_32bitlimbs -export=montsquare256_64bitlimbs -export=montsquare768_64bitlimbs
+	# done compiling, save text version
+	$(WABT_DIR)wasm2wat montsquare.wasm > montsquare.wat
+	#$(WABT_DIR)wat2wasm montsquare.wat > montsquare.wasm
+	# size optimize
+	$(BINARYEN_DIR)wasm-opt $(OPTIMIZATION_BINARYEN) montsquare.wasm -o montsquare_optimized.wasm -g #-g keeps names but takes some size
+	# save text format of final ewasm contract
+	$(WABT_DIR)wasm2wat montsquare_optimized.wasm > montsquare_optimized.wat
+	# save everything to wasm directory
+	# remove intermediate files
+	rm -f montsquare.ll montsquare.o
+
+montsquare_size_optimized:
+	make montsquare \
+	OPTIMIZATION_CLANG=-Oz \
+	OPTIMIZATION_OPT=-Oz \
+	OPTIMIZATION_LLC=-O3 \
+	OPTIMIZATION_WASM_LD=-O2 \
+	OPTIMIZATION_BINARYEN=-Oz 
+	mv montsquare_optimized.wasm montsquare_size_optimized.wasm
+	mv montsquare_optimized.wat montsquare_size_optimized.wat
+
+montsquare_speed_optimized:
+	make montsquare \
+	OPTIMIZATION_CLANG=-O3 \
+	OPTIMIZATION_OPT=-O3 \
+	OPTIMIZATION_LLC=-O3 \
+	OPTIMIZATION_WASM_LD=-O3 \
+	OPTIMIZATION_BINARYEN=-O3
+	mv montsquare_optimized.wasm montsquare_speed_optimized.wasm
+	mv montsquare_optimized.wat montsquare_speed_optimized.wat
+
+montsquare_unoptimized:
+	make montsquare \
+	OPTIMIZATION_CLANG=-O0 \
+	OPTIMIZATION_OPT=-O0 \
+	OPTIMIZATION_LLC=-O0 \
+	OPTIMIZATION_WASM_LD=-O0 \
+	OPTIMIZATION_BINARYEN=-O0 
+	mv montsquare.wasm montsquare_unoptimized.wasm
+	mv montsquare.wat montsquare_unoptimized.wat
+	rm montsquare_optimized.wasm montsquare_optimized.wat
+
+montsquare_all: montsquare_speed_optimized montsquare_size_optimized montsquare_unoptimized
+
 clean:
 	rm *.wasm *.wat
 
