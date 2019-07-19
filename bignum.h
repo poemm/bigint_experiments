@@ -225,3 +225,47 @@ void FUNCNAME(montmul)(UINT* restrict x, UINT* restrict y, UINT* restrict m, UIN
   }
 }
 
+// algorithm 14.36, Handbook of Applied Cryptography, http://cacr.uwaterloo.ca/hac/about/chap14.pdf
+// this is a copy/paste of the one above, but with signature x,y,out, and hard-coded m and inv.
+void FUNCNAME(montmul_3args_)(UINT* restrict x, UINT* restrict y, UINT* restrict out){
+  UINT* m = (UINT*)88888;
+  UINT* inv = (UINT*)99999;
+  UINT A[N*2] = {0};
+  //#pragma unroll	// this unroll increases binary size by a lot
+  for (int i=0; i<N; i++){
+    UINT ui = (A[i]+x[i]*y[0])*inv[0];
+    UINT carry = 0;
+    #pragma unroll
+    for (int j=0; j<N; j++){
+      UINT2 xiyj = (UINT2)x[i]*y[j];
+      UINT2 uimj = (UINT2)ui*m[j];
+      UINT2 partial_sum = xiyj+carry+A[i+j];
+      UINT2 sum = uimj+partial_sum;
+      A[i+j] = (UINT)sum;
+      carry = sum>>LIMB_BITS;
+      // if there was overflow in the sum beyond the carry:
+      if (sum<partial_sum){
+        int k=2;
+        while ( i+j+k<N*2 && A[i+j+k]==(UINT)0-1 ){ // note 0-1 is 0xffffffff
+          A[i+j+k]=0;
+          k++;
+        }
+        if (i+j+k<N*2)
+          A[i+j+k]+=1;
+      }
+      //printf("%d %d %llu %llu %llu %llu %llu %llu %llu %llu %llu\n",i,j,x[i],x[i]*y[0],ui,xiyj,uimj,partial_sum,sum,A[i+j],carry);
+    }
+    A[i+N]+=carry;
+  }
+
+  // instead of right shift, we just get the correct values
+  //#pragma unroll
+  for (int i=0; i<N;i++)
+    out[i] = A[i+N];
+
+  // final subtraction, first see if necessary
+  if (FUNCNAME(less_than_or_equal)(m,out)){
+    FUNCNAME(subtract)(out, m, out);
+  }
+}
+

@@ -97,7 +97,11 @@ ifeq (, $(shell if [ -e lib/wasi/libclang_rt.builtins-wasm32.a ] ; then echo bla
 	wget https://github.com/CraneStation/wasi-sdk/releases/download/wasi-sdk-5/libclang_rt.builtins-wasm32-wasi-5.0.tar.gz
 	tar -xvzf libclang_rt.builtins-wasm32-wasi-5.0.tar.gz
 endif
-	$(LLVM)wasm-ld $(OPTIMIZATION_WASM_LD) montmul.o -o montmul.wasm --no-entry lib/wasi/libclang_rt.builtins-wasm32.a -export=montmul256_32bitlimbs -export=montmul768_32bitlimbs -export=montmul256_64bitlimbs -export=montmul768_64bitlimbs
+	#$(LLVM)wasm-ld $(OPTIMIZATION_WASM_LD) montmul.o -o montmul.wasm --no-entry lib/wasi/libclang_rt.builtins-wasm32.a -export=montmul256_32bitlimbs -export=montmul768_32bitlimbs -export=montmul256_64bitlimbs -export=montmul768_64bitlimbs -export=_main
+	#$(LLVM)wasm-ld $(OPTIMIZATION_WASM_LD) montmul.o -o montmul.wasm --no-entry lib/wasi/libclang_rt.builtins-wasm32.a -export=_main256_32bitlimbs
+	$(LLVM)wasm-ld $(OPTIMIZATION_WASM_LD) montmul.o -o montmul.wasm --no-entry lib/wasi/libclang_rt.builtins-wasm32.a -export=_main256_64bitlimbs
+	#$(LLVM)wasm-ld $(OPTIMIZATION_WASM_LD) montmul.o -o montmul.wasm --no-entry lib/wasi/libclang_rt.builtins-wasm32.a -export=_main768_32bitlimbs
+	#$(LLVM)wasm-ld $(OPTIMIZATION_WASM_LD) montmul.o -o montmul.wasm --no-entry lib/wasi/libclang_rt.builtins-wasm32.a -export=_main768_64bitlimbs
 	# done compiling, save text version
 	$(WABT_DIR)wasm2wat montmul.wasm > montmul.wat
 	#$(WABT_DIR)wat2wasm montmul.wat > montmul.wasm
@@ -152,7 +156,7 @@ ifeq (, $(shell if [ -e lib/wasi/libclang_rt.builtins-wasm32.a ] ; then echo bla
 	wget https://github.com/CraneStation/wasi-sdk/releases/download/wasi-sdk-5/libclang_rt.builtins-wasm32-wasi-5.0.tar.gz
 	tar -xvzf libclang_rt.builtins-wasm32-wasi-5.0.tar.gz
 endif
-	$(LLVM)wasm-ld $(OPTIMIZATION_WASM_LD) montsquare.o -o montsquare.wasm --no-entry lib/wasi/libclang_rt.builtins-wasm32.a -export=montsquare256_32bitlimbs -export=montsquare768_32bitlimbs -export=montsquare256_64bitlimbs -export=montsquare768_64bitlimbs
+	$(LLVM)wasm-ld $(OPTIMIZATION_WASM_LD) montsquare.o -o montsquare.wasm --no-entry lib/wasi/libclang_rt.builtins-wasm32.a -export=montsquare256_32bitlimbs -export=montsquare768_32bitlimbs -export=montsquare256_64bitlimbs
 	# done compiling, save text version
 	$(WABT_DIR)wasm2wat montsquare.wasm > montsquare.wat
 	#$(WABT_DIR)wat2wasm montsquare.wat > montsquare.wasm
@@ -196,6 +200,36 @@ montsquare_unoptimized:
 	rm montsquare_optimized.wasm montsquare_optimized.wat
 
 montsquare_all: montsquare_speed_optimized montsquare_size_optimized montsquare_unoptimized
+
+montmul_3args:
+	# build
+	$(LLVM)clang -cc1 $(OPTIMIZATION_CLANG) -emit-llvm -triple=wasm32-unknown-unknown-wasm montmul_3args.c -o montmul_3args.ll
+	$(LLVM)opt $(OPTIMIZATION_OPT) montmul_3args.ll -o montmul_3args.ll
+	$(LLVM)llc $(OPTIMIZATION_LLC) -filetype=obj montmul_3args.ll -o montmul_3args.o
+	# get builtin __multi3() to link against
+ifeq (, $(shell if [ -e lib/wasi/libclang_rt.builtins-wasm32.a ] ; then echo blah ; fi;))
+	wget https://github.com/CraneStation/wasi-sdk/releases/download/wasi-sdk-5/libclang_rt.builtins-wasm32-wasi-5.0.tar.gz
+	tar -xvzf libclang_rt.builtins-wasm32-wasi-5.0.tar.gz
+endif
+	$(LLVM)wasm-ld $(OPTIMIZATION_WASM_LD) montmul_3args.o -o montmul_3args.wasm --no-entry lib/wasi/libclang_rt.builtins-wasm32.a -export=montmul_3args_256_32bitlimbs -export=montmul_3args_256_64bitlimbs -export=montmul_3args_768_32bitlimbs -export=montmul_3args_768_64bitlimbs
+	# done compiling, save text version
+	$(WABT_DIR)wasm2wat montmul_3args.wasm > montmul_3args.wat
+	#$(WABT_DIR)wat2wasm montmul.wat > montmul.wasm
+	# size optimize
+	$(BINARYEN_DIR)wasm-opt $(OPTIMIZATION_BINARYEN) montmul_3args.wasm -o montmul_3args_optimized.wasm -g #-g keeps names but takes some size
+	# save text format of final ewasm contract
+	$(WABT_DIR)wasm2wat montmul_3args_optimized.wasm > montmul_3args_optimized.wat
+	# save everything to wasm directory
+	# remove intermediate files
+	rm -f montmul_3args.ll montmul_3args.o
+
+montmul_3args_speed_optimized:
+	make montmul_3args \
+	OPTIMIZATION_CLANG=-O3 \
+	OPTIMIZATION_OPT=-O3 \
+	OPTIMIZATION_LLC=-O3 \
+	OPTIMIZATION_WASM_LD=-O3 \
+	OPTIMIZATION_BINARYEN=-O3
 
 clean:
 	rm *.wasm *.wat
