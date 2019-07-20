@@ -5,6 +5,50 @@
   (type (;3;) (func (param i32 i32) (result i64)))
   (type (;4;) (func (param i32 i32) (result i32)))
   (type (;5;) (func (param i32 i64 i64)))
+  (func $memset (type 4) (param i32 i32) (result i32)
+    block  ;; label = @1
+      local.get 1
+      i32.const 9
+      i32.lt_u
+      br_if 0 (;@1;)
+      loop  ;; label = @2
+        local.get 1
+        i32.const 8
+        i32.lt_u
+        br_if 1 (;@1;)
+        local.get 0
+        i64.const 0
+        i64.store
+        local.get 1
+        i32.const -8
+        i32.add
+        local.set 1
+        local.get 0
+        i32.const 8
+        i32.add
+        local.set 0
+        br 0 (;@2;)
+      end
+      unreachable
+    end
+    loop  ;; label = @1
+      local.get 1
+      if  ;; label = @2
+        local.get 0
+        i32.const 0
+        i32.store8
+        local.get 0
+        i32.const 1
+        i32.add
+        local.set 0
+        local.get 1
+        i32.const -1
+        i32.add
+        local.set 1
+        br 1 (;@1;)
+      end
+    end
+    local.get 0)
   (func $subtract256_32bitlimbs (type 0) (param i32 i32 i32)
     (local i32 i32 i32)
     loop  ;; label = @1
@@ -312,25 +356,6 @@
     i32.const -64
     i32.sub
     global.set 0)
-  (func $memset (type 4) (param i32 i32) (result i32)
-    loop  ;; label = @1
-      local.get 1
-      if  ;; label = @2
-        local.get 0
-        i32.const 0
-        i32.store8
-        local.get 0
-        i32.const 1
-        i32.add
-        local.set 0
-        local.get 1
-        i32.const -1
-        i32.add
-        local.set 1
-        br 1 (;@1;)
-      end
-    end
-    local.get 0)
   (func $subtract768_32bitlimbs (type 0) (param i32 i32 i32)
     (local i32 i32 i32)
     loop  ;; label = @1

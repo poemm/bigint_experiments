@@ -33,6 +33,8 @@ export OPTIMIZATION_LLC := -O3          #          -O0, -O1, -O2, or -O3
 export OPTIMIZATION_WASM_LD := -O2      #          -O0, -O1, or -O2 # see docs, this has to do with string merging, dont think it affects wasm
 export OPTIMIZATION_BINARYEN := -Oz     #-Oz, -Os, -O0, -O1, -O2, or -O3
 
+export EXPORTS :=      # this will be is an arg to wasm-ld
+
 default: montmul_all
 
 # dependencies checks and installation
@@ -87,6 +89,11 @@ ifeq (, $(shell which $(LLVM)wasm-ld))
 endif
 
 
+
+###############
+# montmul stuff
+#
+
 montmul:
 	# build
 	$(LLVM)clang -cc1 $(OPTIMIZATION_CLANG) -emit-llvm -triple=wasm32-unknown-unknown-wasm montmul.c -o montmul.ll
@@ -99,9 +106,10 @@ ifeq (, $(shell if [ -e lib/wasi/libclang_rt.builtins-wasm32.a ] ; then echo bla
 endif
 	#$(LLVM)wasm-ld $(OPTIMIZATION_WASM_LD) montmul.o -o montmul.wasm --no-entry lib/wasi/libclang_rt.builtins-wasm32.a -export=montmul256_32bitlimbs -export=montmul768_32bitlimbs -export=montmul256_64bitlimbs -export=montmul768_64bitlimbs -export=_main
 	#$(LLVM)wasm-ld $(OPTIMIZATION_WASM_LD) montmul.o -o montmul.wasm --no-entry lib/wasi/libclang_rt.builtins-wasm32.a -export=_main256_32bitlimbs
-	$(LLVM)wasm-ld $(OPTIMIZATION_WASM_LD) montmul.o -o montmul.wasm --no-entry lib/wasi/libclang_rt.builtins-wasm32.a -export=_main256_64bitlimbs
+	#$(LLVM)wasm-ld $(OPTIMIZATION_WASM_LD) montmul.o -o montmul.wasm --no-entry lib/wasi/libclang_rt.builtins-wasm32.a -export=_main256_64bitlimbs
 	#$(LLVM)wasm-ld $(OPTIMIZATION_WASM_LD) montmul.o -o montmul.wasm --no-entry lib/wasi/libclang_rt.builtins-wasm32.a -export=_main768_32bitlimbs
 	#$(LLVM)wasm-ld $(OPTIMIZATION_WASM_LD) montmul.o -o montmul.wasm --no-entry lib/wasi/libclang_rt.builtins-wasm32.a -export=_main768_64bitlimbs
+	$(LLVM)wasm-ld $(OPTIMIZATION_WASM_LD) montmul.o -o montmul.wasm --no-entry lib/wasi/libclang_rt.builtins-wasm32.a $(EXPORTS)
 	# done compiling, save text version
 	$(WABT_DIR)wasm2wat montmul.wasm > montmul.wat
 	#$(WABT_DIR)wat2wasm montmul.wat > montmul.wasm
@@ -111,7 +119,7 @@ endif
 	$(WABT_DIR)wasm2wat montmul_optimized.wasm > montmul_optimized.wat
 	# save everything to wasm directory
 	# remove intermediate files
-	rm -f montmul.ll montmul.o
+	rm -f montmul.ll montmul.o montmul.wasm montmul.wat
 
 montmul_size_optimized:
 	make montmul \
@@ -119,7 +127,8 @@ montmul_size_optimized:
 	OPTIMIZATION_OPT=-Oz \
 	OPTIMIZATION_LLC=-O3 \
 	OPTIMIZATION_WASM_LD=-O2 \
-	OPTIMIZATION_BINARYEN=-Oz 
+	OPTIMIZATION_BINARYEN=-Oz \
+	EXPORTS="-export=montmul256_32bitlimbs -export=montmul768_32bitlimbs -export=montmul256_64bitlimbs -export=montmul768_64bitlimbs"
 	mv montmul_optimized.wasm montmul_size_optimized.wasm
 	mv montmul_optimized.wat montmul_size_optimized.wat
 
@@ -129,7 +138,8 @@ montmul_speed_optimized:
 	OPTIMIZATION_OPT=-O3 \
 	OPTIMIZATION_LLC=-O3 \
 	OPTIMIZATION_WASM_LD=-O3 \
-	OPTIMIZATION_BINARYEN=-O3
+	OPTIMIZATION_BINARYEN=-O3 \
+	EXPORTS="-export=montmul256_32bitlimbs -export=montmul768_32bitlimbs -export=montmul256_64bitlimbs -export=montmul768_64bitlimbs"
 	mv montmul_optimized.wasm montmul_speed_optimized.wasm
 	mv montmul_optimized.wat montmul_speed_optimized.wat
 
@@ -139,12 +149,112 @@ montmul_unoptimized:
 	OPTIMIZATION_OPT=-O0 \
 	OPTIMIZATION_LLC=-O0 \
 	OPTIMIZATION_WASM_LD=-O0 \
-	OPTIMIZATION_BINARYEN=-O0 
-	mv montmul.wasm montmul_unoptimized.wasm
-	mv montmul.wat montmul_unoptimized.wat
-	rm montmul_optimized.wasm montmul_optimized.wat
+	OPTIMIZATION_BINARYEN=-O0 \
+	EXPORTS="-export=montmul256_32bitlimbs -export=montmul768_32bitlimbs -export=montmul256_64bitlimbs -export=montmul768_64bitlimbs"
+	mv montmul_optimized.wasm montmul_unoptimized.wasm
+	mv montmul_optimized.wat montmul_unoptimized.wat
 
 montmul_all: montmul_speed_optimized montmul_size_optimized montmul_unoptimized
+
+
+#####################
+# montmul_bench stuff
+#
+
+montmul_bench:
+	# build
+	$(LLVM)clang -cc1 $(OPTIMIZATION_CLANG) -emit-llvm -triple=wasm32-unknown-unknown-wasm montmul_bench.c -o montmul_bench.ll
+	$(LLVM)opt $(OPTIMIZATION_OPT) montmul_bench.ll -o montmul_bench.ll
+	$(LLVM)llc $(OPTIMIZATION_LLC) -filetype=obj montmul_bench.ll -o montmul_bench.o
+	# get builtin __multi3() to link against
+ifeq (, $(shell if [ -e lib/wasi/libclang_rt.builtins-wasm32.a ] ; then echo blah ; fi;))
+	wget https://github.com/CraneStation/wasi-sdk/releases/download/wasi-sdk-5/libclang_rt.builtins-wasm32-wasi-5.0.tar.gz
+	tar -xvzf libclang_rt.builtins-wasm32-wasi-5.0.tar.gz
+endif
+	#$(LLVM)wasm-ld $(OPTIMIZATION_WASM_LD) montmul.o -o montmul.wasm --no-entry lib/wasi/libclang_rt.builtins-wasm32.a -export=_main256_32bitlimbs
+	#$(LLVM)wasm-ld $(OPTIMIZATION_WASM_LD) montmul.o -o montmul.wasm --no-entry lib/wasi/libclang_rt.builtins-wasm32.a -export=_main256_64bitlimbs
+	#$(LLVM)wasm-ld $(OPTIMIZATION_WASM_LD) montmul.o -o montmul.wasm --no-entry lib/wasi/libclang_rt.builtins-wasm32.a -export=_main768_32bitlimbs
+	$(LLVM)wasm-ld $(OPTIMIZATION_WASM_LD) montmul_bench.o -o montmul_bench.wasm --no-entry lib/wasi/libclang_rt.builtins-wasm32.a $(EXPORTS)
+	# done compiling, save text version
+	$(WABT_DIR)wasm2wat montmul_bench.wasm > montmul_bench.wat
+	#$(WABT_DIR)wat2wasm montmul_bench.wat > montmul_bench.wasm
+	# size optimize
+	$(BINARYEN_DIR)wasm-opt $(OPTIMIZATION_BINARYEN) montmul_bench.wasm -o montmul_bench_optimized.wasm -g #-g keeps names but takes some size
+	# save text format of final ewasm contract
+	$(WABT_DIR)wasm2wat montmul_bench_optimized.wasm > montmul_bench_optimized.wat
+	# save everything to wasm directory
+	# remove intermediate files
+	rm -f montmul_bench.ll montmul_bench.o montmul_bench.wasm montmul_bench.wat
+
+
+montmul_bench_size_optimized:
+	make montmul_bench \
+	OPTIMIZATION_CLANG=-Oz \
+	OPTIMIZATION_OPT=-Oz \
+	OPTIMIZATION_LLC=-O3 \
+	OPTIMIZATION_WASM_LD=-O2 \
+	OPTIMIZATION_BINARYEN=-Oz
+
+montmul_bench_speed_optimized:
+	make montmul_bench \
+	OPTIMIZATION_CLANG=-O3 \
+	OPTIMIZATION_OPT=-O3 \
+	OPTIMIZATION_LLC=-O3 \
+	OPTIMIZATION_WASM_LD=-O3 \
+	OPTIMIZATION_BINARYEN=-O3 
+
+montmul_bench_unoptimized:
+	make montmul_bench \
+	OPTIMIZATION_CLANG=-O0 \
+	OPTIMIZATION_OPT=-O0 \
+	OPTIMIZATION_LLC=-O0 \
+	OPTIMIZATION_WASM_LD=-O0 \
+	OPTIMIZATION_BINARYEN=-O0 
+
+montmul_bench_all:
+	# 256 32
+	make montmul_bench_unoptimized EXPORTS=-export=_main256_32bitlimbs
+	mv montmul_bench_optimized.wasm montmul_bench_unoptimized256_32bitlimbs.wasm
+	make montmul_bench_size_optimized EXPORTS=-export=_main256_32bitlimbs
+	mv montmul_bench_optimized.wasm montmul_bench_size_optimized256_32bitlimbs.wasm
+	make montmul_bench_speed_optimized EXPORTS=-export=_main256_32bitlimbs
+	mv montmul_bench_optimized.wasm montmul_bench_speed_optimized256_32bitlimbs.wasm
+	# 256 64
+	make montmul_bench_unoptimized EXPORTS=-export=_main256_64bitlimbs
+	mv montmul_bench_optimized.wasm montmul_bench_unoptimized256_64bitlimbs.wasm
+	make montmul_bench_size_optimized EXPORTS=-export=_main256_64bitlimbs
+	mv montmul_bench_optimized.wasm montmul_bench_size_optimized256_64bitlimbs.wasm
+	make montmul_bench_speed_optimized EXPORTS=-export=_main256_64bitlimbs
+	mv montmul_bench_optimized.wasm montmul_bench_speed_optimized256_64bitlimbs.wasm
+	# 768 32 
+	make montmul_bench_unoptimized EXPORTS=-export=_main768_32bitlimbs
+	mv montmul_bench_optimized.wasm montmul_bench_unoptimized768_32bitlimbs.wasm
+	make montmul_bench_size_optimized EXPORTS=-export=_main768_32bitlimbs
+	mv montmul_bench_optimized.wasm montmul_bench_size_optimized768_32bitlimbs.wasm
+	make montmul_bench_speed_optimized EXPORTS=-export=_main768_32bitlimbs
+	mv montmul_bench_optimized.wasm montmul_bench_speed_optimized768_32bitlimbs.wasm
+	# 768 64
+	make montmul_bench_unoptimized EXPORTS=-export=_main768_64bitlimbs
+	mv montmul_bench_optimized.wasm montmul_bench_unoptimized768_64bitlimbs.wasm
+	make montmul_bench_size_optimized EXPORTS=-export=_main768_64bitlimbs
+	mv montmul_bench_optimized.wasm montmul_bench_size_optimized768_64bitlimbs.wasm
+	make montmul_bench_speed_optimized EXPORTS=-export=_main768_64bitlimbs
+	mv montmul_bench_optimized.wasm montmul_bench_speed_optimized768_64bitlimbs.wasm
+	# all sizes in one file
+	make montmul_bench_unoptimized EXPORTS="-export=montmul256_32bitlimbs -export=montmul256_64bitlimbs -export=montmul768_32bitlimbs -export=montmul768_64bitlimbs"
+	mv montmul_bench_optimized.wasm montmul_bench_unoptimized.wasm
+	mv montmul_bench_optimized.wat montmul_bench_unoptimized.wat
+	make montmul_bench_size_optimized EXPORTS="-export=montmul256_32bitlimbs -export=montmul256_64bitlimbs -export=montmul768_32bitlimbs -export=montmul768_64bitlimbs"
+	mv montmul_bench_optimized.wasm montmul_bench_size_optimized.wasm
+	mv montmul_bench_optimized.wat montmul_bench_size_optimized.wat
+	make montmul_bench_speed_optimized EXPORTS="-export=montmul256_32bitlimbs -export=montmul256_64bitlimbs -export=montmul768_32bitlimbs -export=montmul768_64bitlimbs"
+	mv montmul_bench_optimized.wasm montmul_bench_speed_optimized.wasm
+	mv montmul_bench_optimized.wat montmul_bench_speed_optimized.wat
+
+
+##################
+# montsquare stuff
+#
 
 montsquare:
 	# build
@@ -166,7 +276,7 @@ endif
 	$(WABT_DIR)wasm2wat montsquare_optimized.wasm > montsquare_optimized.wat
 	# save everything to wasm directory
 	# remove intermediate files
-	rm -f montsquare.ll montsquare.o
+	rm -f montsquare.ll montsquare.o montsquare.wasm montsquare.wat
 
 montsquare_size_optimized:
 	make montsquare \
@@ -195,23 +305,22 @@ montsquare_unoptimized:
 	OPTIMIZATION_LLC=-O0 \
 	OPTIMIZATION_WASM_LD=-O0 \
 	OPTIMIZATION_BINARYEN=-O0 
-	mv montsquare.wasm montsquare_unoptimized.wasm
-	mv montsquare.wat montsquare_unoptimized.wat
-	rm montsquare_optimized.wasm montsquare_optimized.wat
+	mv montsquare_optimized.wasm montsquare_unoptimized.wasm
+	mv montsquare_optimized.wat montsquare_unoptimized.wat
 
 montsquare_all: montsquare_speed_optimized montsquare_size_optimized montsquare_unoptimized
 
 montmul_3args:
 	# build
-	$(LLVM)clang -cc1 $(OPTIMIZATION_CLANG) -emit-llvm -triple=wasm32-unknown-unknown-wasm montmul_3args.c -o montmul_3args.ll
-	$(LLVM)opt $(OPTIMIZATION_OPT) montmul_3args.ll -o montmul_3args.ll
-	$(LLVM)llc $(OPTIMIZATION_LLC) -filetype=obj montmul_3args.ll -o montmul_3args.o
+	$(LLVM)clang -cc1 $(OPTIMIZATION_CLANG) -emit-llvm -triple=wasm32-unknown-unknown-wasm bignum.c -o bignum.ll
+	$(LLVM)opt $(OPTIMIZATION_OPT) bignum.ll -o bignum.ll
+	$(LLVM)llc $(OPTIMIZATION_LLC) -filetype=obj bignum.ll -o bignum.o
 	# get builtin __multi3() to link against
 ifeq (, $(shell if [ -e lib/wasi/libclang_rt.builtins-wasm32.a ] ; then echo blah ; fi;))
 	wget https://github.com/CraneStation/wasi-sdk/releases/download/wasi-sdk-5/libclang_rt.builtins-wasm32-wasi-5.0.tar.gz
 	tar -xvzf libclang_rt.builtins-wasm32-wasi-5.0.tar.gz
 endif
-	$(LLVM)wasm-ld $(OPTIMIZATION_WASM_LD) montmul_3args.o -o montmul_3args.wasm --no-entry lib/wasi/libclang_rt.builtins-wasm32.a -export=montmul_3args_256_32bitlimbs -export=montmul_3args_256_64bitlimbs -export=montmul_3args_768_32bitlimbs -export=montmul_3args_768_64bitlimbs
+	$(LLVM)wasm-ld $(OPTIMIZATION_WASM_LD) bignum.o -o montmul_3args.wasm --no-entry lib/wasi/libclang_rt.builtins-wasm32.a $(EXPORTS)
 	# done compiling, save text version
 	$(WABT_DIR)wasm2wat montmul_3args.wasm > montmul_3args.wat
 	#$(WABT_DIR)wat2wasm montmul.wat > montmul.wasm
@@ -221,7 +330,7 @@ endif
 	$(WABT_DIR)wasm2wat montmul_3args_optimized.wasm > montmul_3args_optimized.wat
 	# save everything to wasm directory
 	# remove intermediate files
-	rm -f montmul_3args.ll montmul_3args.o
+	rm -f bignum.ll bignum.o
 
 montmul_3args_speed_optimized:
 	make montmul_3args \
@@ -229,7 +338,15 @@ montmul_3args_speed_optimized:
 	OPTIMIZATION_OPT=-O3 \
 	OPTIMIZATION_LLC=-O3 \
 	OPTIMIZATION_WASM_LD=-O3 \
-	OPTIMIZATION_BINARYEN=-O3
+	OPTIMIZATION_BINARYEN=-O3 \
+	EXPORTS="-export=montmul_3args_256_32bitlimbs -export=montmul_3args_256_64bitlimbs -export=montmul_3args_768_32bitlimbs -export=montmul_3args_768_64bitlimbs"
+
+
+#################
+# make everything
+#
+
+all: montmul_3args_speed_optimized montsquare_all montmul_bench_all montmul_all
 
 clean:
 	rm *.wasm *.wat

@@ -3,9 +3,76 @@
   (type (;1;) (func (param i32 i32 i32)))
   (type (;2;) (func (param i32 i32) (result i32)))
   (type (;3;) (func (param i32 i32) (result i64)))
-  (type (;4;) (func (param i32) (result i32)))
-  (type (;5;) (func (param i32 i32) (result i32)))
+  (type (;4;) (func (param i32 i32) (result i32)))
+  (type (;5;) (func (param i32) (result i32)))
   (type (;6;) (func (param i32 i64 i64)))
+  (func $memcpy (type 4) (param i32 i32) (result i32)
+    (local i32 i32)
+    local.get 0
+    local.set 2
+    i32.const 96
+    local.set 3
+    loop  ;; label = @1
+      local.get 2
+      local.get 1
+      i64.load
+      i64.store
+      local.get 1
+      i32.const 8
+      i32.add
+      local.set 1
+      local.get 2
+      i32.const 8
+      i32.add
+      local.set 2
+      local.get 3
+      i32.const -8
+      i32.add
+      local.tee 3
+      i32.const 7
+      i32.gt_u
+      br_if 0 (;@1;)
+    end
+    local.get 0)
+  (func $memset (type 5) (param i32) (result i32)
+    (local i32)
+    i32.const 192
+    local.set 1
+    loop  ;; label = @1
+      local.get 0
+      i64.const 0
+      i64.store
+      local.get 0
+      i32.const 8
+      i32.add
+      local.set 0
+      local.get 1
+      i32.const -8
+      i32.add
+      local.tee 1
+      i32.const 7
+      i32.gt_u
+      br_if 0 (;@1;)
+    end
+    i32.const 0
+    local.tee 1
+    if  ;; label = @1
+      loop  ;; label = @2
+        local.get 0
+        i32.const 0
+        i32.store8
+        local.get 0
+        i32.const 1
+        i32.add
+        local.set 0
+        local.get 1
+        i32.const -1
+        i32.add
+        local.tee 1
+        br_if 0 (;@2;)
+      end
+    end
+    local.get 0)
   (func $montmul256_32bitlimbs (type 0) (param i32 i32 i32 i32 i32)
     (local i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i64 i64 i64 i64 i64 i64 i64 i64 i64 i64 i64 i64 i64 i64 i64 i64 i64 i64 i64 i64 i64)
     global.get 0
@@ -3600,51 +3667,6 @@
     i32.const 192
     i32.add
     global.set 0)
-  (func $memset (type 4) (param i32) (result i32)
-    (local i32)
-    i32.const 192
-    local.set 1
-    loop  ;; label = @1
-      local.get 0
-      i32.const 0
-      i32.store8
-      local.get 0
-      i32.const 1
-      i32.add
-      local.set 0
-      local.get 1
-      i32.const -1
-      i32.add
-      local.tee 1
-      br_if 0 (;@1;)
-    end
-    local.get 0)
-  (func $memcpy (type 5) (param i32 i32) (result i32)
-    (local i32 i32)
-    i32.const 96
-    local.set 3
-    local.get 0
-    local.set 2
-    loop  ;; label = @1
-      local.get 2
-      local.get 1
-      i32.load8_u
-      i32.store8
-      local.get 2
-      i32.const 1
-      i32.add
-      local.set 2
-      local.get 1
-      i32.const 1
-      i32.add
-      local.set 1
-      local.get 3
-      i32.const -1
-      i32.add
-      local.tee 3
-      br_if 0 (;@1;)
-    end
-    local.get 0)
   (func $montmul256_64bitlimbs (type 0) (param i32 i32 i32 i32 i32)
     (local i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i64 i64 i64 i64 i64 i64 i64 i64 i64 i64 i64 i64 i64 i64 i64)
     global.get 0
