@@ -2,7 +2,7 @@
 	.globl	mul256x256_256
 
 	.text
-mul256x256_256:	# computes mul256x256_256, where pointers: a in rdi, b in rsi, out in rdx
+mul256x256_256:	# computes mul256x256_256, where pointers: out in rdi, a in rsi, b in rdx
 
 	# following C calling conventions, save registers
 	push	%rbx
@@ -41,7 +41,10 @@ mul256x256_256:	# computes mul256x256_256, where pointers: a in rdi, b in rsi, o
 	imulq	%rcx, %rdx	# multiply
 	movq	%rdx, %rbx	# remove dependancy from rdx
 	addq	%rbx, %rax	# add to accumulator rax
-	adcq	$0, %rsi	# if overflow, add to rsi
+	cmpq	%rax, %rbx	# compare rax and rbx
+	seta	%bl		# set register bl to 1 or 0 based on cmpq
+	movzx	%bl, %rbx	# extend bl to rbx
+	addq	%rbx, %rsi	# add to overflow, even if add zero
 
 	# write result for this limb, prepare for next limb
 	mov	%eax, 0(%rdi)	# write result for this 32-bit limb
@@ -60,7 +63,10 @@ mul256x256_256:	# computes mul256x256_256, where pointers: a in rdi, b in rsi, o
 	imulq	%rcx, %rdx	# multiply
 	movq	%rdx, %rbx	# remove dependancy from rdx
 	addq	%rbx, %rax	# add to accumulator rax
-	adcq	$0, %rsi	# if overflow, add to rsi
+	cmpq	%rax, %rbx	# compare rax and rbx
+	seta	%bl		# set register bl to 1 or 0 based on cmpq
+	movzx	%bl, %rbx	# extend bl to rbx
+	addq	%rbx, %rsi	# add to overflow, even if add zero
 
 	movq	%r8, %rcx	# bring a to workspace
 	shrq	$32, %rcx	# get upper 32-bits
@@ -69,7 +75,10 @@ mul256x256_256:	# computes mul256x256_256, where pointers: a in rdi, b in rsi, o
 	imulq	%rcx, %rdx	# multiply
 	movq	%rdx, %rbx	# remove dependancy from rdx
 	addq	%rbx, %rax	# add to accumulator rax
-	adcq	$0, %rsi	# if overflow, add to rsi
+	cmpq	%rax, %rbx	# compare rax and rbx
+	seta	%bl		# set register bl to 1 or 0 based on cmpq
+	movzx	%bl, %rbx	# extend bl to rbx
+	addq	%rbx, %rsi	# add to overflow, even if add zero
 
 	# write result for this limb, prepare for next limb
 	mov	%eax, 4(%rdi)	# write result for this 32-bit limb
@@ -88,7 +97,10 @@ mul256x256_256:	# computes mul256x256_256, where pointers: a in rdi, b in rsi, o
 	imulq	%rcx, %rdx	# multiply
 	movq	%rdx, %rbx	# remove dependancy from rdx
 	addq	%rbx, %rax	# add to accumulator rax
-	adcq	$0, %rsi	# if overflow, add to rsi
+	cmpq	%rax, %rbx	# compare rax and rbx
+	seta	%bl		# set register bl to 1 or 0 based on cmpq
+	movzx	%bl, %rbx	# extend bl to rbx
+	addq	%rbx, %rsi	# add to overflow, even if add zero
 
 	movq	%r8, %rcx	# bring a to workspace
 	shrq	$32, %rcx	# get upper 32-bits
@@ -97,7 +109,10 @@ mul256x256_256:	# computes mul256x256_256, where pointers: a in rdi, b in rsi, o
 	imulq	%rcx, %rdx	# multiply
 	movq	%rdx, %rbx	# remove dependancy from rdx
 	addq	%rbx, %rax	# add to accumulator rax
-	adcq	$0, %rsi	# if overflow, add to rsi
+	cmpq	%rax, %rbx	# compare rax and rbx
+	seta	%bl		# set register bl to 1 or 0 based on cmpq
+	movzx	%bl, %rbx	# extend bl to rbx
+	addq	%rbx, %rsi	# add to overflow, even if add zero
 
 	movq	%r9, %rcx	# bring a to workspace
 	movl	%ecx, %ecx	# get lower 32-bits
@@ -106,7 +121,10 @@ mul256x256_256:	# computes mul256x256_256, where pointers: a in rdi, b in rsi, o
 	imulq	%rcx, %rdx	# multiply
 	movq	%rdx, %rbx	# remove dependancy from rdx
 	addq	%rbx, %rax	# add to accumulator rax
-	adcq	$0, %rsi	# if overflow, add to rsi
+	cmpq	%rax, %rbx	# compare rax and rbx
+	seta	%bl		# set register bl to 1 or 0 based on cmpq
+	movzx	%bl, %rbx	# extend bl to rbx
+	addq	%rbx, %rsi	# add to overflow, even if add zero
 
 	# write result for this limb, prepare for next limb
 	mov	%eax, 8(%rdi)	# write result for this 32-bit limb
@@ -125,7 +143,10 @@ mul256x256_256:	# computes mul256x256_256, where pointers: a in rdi, b in rsi, o
 	imulq	%rcx, %rdx	# multiply
 	movq	%rdx, %rbx	# remove dependancy from rdx
 	addq	%rbx, %rax	# add to accumulator rax
-	adcq	$0, %rsi	# if overflow, add to rsi
+	cmpq	%rax, %rbx	# compare rax and rbx
+	seta	%bl		# set register bl to 1 or 0 based on cmpq
+	movzx	%bl, %rbx	# extend bl to rbx
+	addq	%rbx, %rsi	# add to overflow, even if add zero
 
 	movq	%r8, %rcx	# bring a to workspace
 	shrq	$32, %rcx	# get upper 32-bits
@@ -134,7 +155,10 @@ mul256x256_256:	# computes mul256x256_256, where pointers: a in rdi, b in rsi, o
 	imulq	%rcx, %rdx	# multiply
 	movq	%rdx, %rbx	# remove dependancy from rdx
 	addq	%rbx, %rax	# add to accumulator rax
-	adcq	$0, %rsi	# if overflow, add to rsi
+	cmpq	%rax, %rbx	# compare rax and rbx
+	seta	%bl		# set register bl to 1 or 0 based on cmpq
+	movzx	%bl, %rbx	# extend bl to rbx
+	addq	%rbx, %rsi	# add to overflow, even if add zero
 
 	movq	%r9, %rcx	# bring a to workspace
 	movl	%ecx, %ecx	# get lower 32-bits
@@ -143,7 +167,10 @@ mul256x256_256:	# computes mul256x256_256, where pointers: a in rdi, b in rsi, o
 	imulq	%rcx, %rdx	# multiply
 	movq	%rdx, %rbx	# remove dependancy from rdx
 	addq	%rbx, %rax	# add to accumulator rax
-	adcq	$0, %rsi	# if overflow, add to rsi
+	cmpq	%rax, %rbx	# compare rax and rbx
+	seta	%bl		# set register bl to 1 or 0 based on cmpq
+	movzx	%bl, %rbx	# extend bl to rbx
+	addq	%rbx, %rsi	# add to overflow, even if add zero
 
 	movq	%r9, %rcx	# bring a to workspace
 	shrq	$32, %rcx	# get upper 32-bits
@@ -152,7 +179,10 @@ mul256x256_256:	# computes mul256x256_256, where pointers: a in rdi, b in rsi, o
 	imulq	%rcx, %rdx	# multiply
 	movq	%rdx, %rbx	# remove dependancy from rdx
 	addq	%rbx, %rax	# add to accumulator rax
-	adcq	$0, %rsi	# if overflow, add to rsi
+	cmpq	%rax, %rbx	# compare rax and rbx
+	seta	%bl		# set register bl to 1 or 0 based on cmpq
+	movzx	%bl, %rbx	# extend bl to rbx
+	addq	%rbx, %rsi	# add to overflow, even if add zero
 
 	# write result for this limb, prepare for next limb
 	mov	%eax, 12(%rdi)	# write result for this 32-bit limb
@@ -171,7 +201,10 @@ mul256x256_256:	# computes mul256x256_256, where pointers: a in rdi, b in rsi, o
 	imulq	%rcx, %rdx	# multiply
 	movq	%rdx, %rbx	# remove dependancy from rdx
 	addq	%rbx, %rax	# add to accumulator rax
-	adcq	$0, %rsi	# if overflow, add to rsi
+	cmpq	%rax, %rbx	# compare rax and rbx
+	seta	%bl		# set register bl to 1 or 0 based on cmpq
+	movzx	%bl, %rbx	# extend bl to rbx
+	addq	%rbx, %rsi	# add to overflow, even if add zero
 
 	movq	%r8, %rcx	# bring a to workspace
 	shrq	$32, %rcx	# get upper 32-bits
@@ -180,7 +213,10 @@ mul256x256_256:	# computes mul256x256_256, where pointers: a in rdi, b in rsi, o
 	imulq	%rcx, %rdx	# multiply
 	movq	%rdx, %rbx	# remove dependancy from rdx
 	addq	%rbx, %rax	# add to accumulator rax
-	adcq	$0, %rsi	# if overflow, add to rsi
+	cmpq	%rax, %rbx	# compare rax and rbx
+	seta	%bl		# set register bl to 1 or 0 based on cmpq
+	movzx	%bl, %rbx	# extend bl to rbx
+	addq	%rbx, %rsi	# add to overflow, even if add zero
 
 	movq	%r9, %rcx	# bring a to workspace
 	movl	%ecx, %ecx	# get lower 32-bits
@@ -189,7 +225,10 @@ mul256x256_256:	# computes mul256x256_256, where pointers: a in rdi, b in rsi, o
 	imulq	%rcx, %rdx	# multiply
 	movq	%rdx, %rbx	# remove dependancy from rdx
 	addq	%rbx, %rax	# add to accumulator rax
-	adcq	$0, %rsi	# if overflow, add to rsi
+	cmpq	%rax, %rbx	# compare rax and rbx
+	seta	%bl		# set register bl to 1 or 0 based on cmpq
+	movzx	%bl, %rbx	# extend bl to rbx
+	addq	%rbx, %rsi	# add to overflow, even if add zero
 
 	movq	%r9, %rcx	# bring a to workspace
 	shrq	$32, %rcx	# get upper 32-bits
@@ -198,7 +237,10 @@ mul256x256_256:	# computes mul256x256_256, where pointers: a in rdi, b in rsi, o
 	imulq	%rcx, %rdx	# multiply
 	movq	%rdx, %rbx	# remove dependancy from rdx
 	addq	%rbx, %rax	# add to accumulator rax
-	adcq	$0, %rsi	# if overflow, add to rsi
+	cmpq	%rax, %rbx	# compare rax and rbx
+	seta	%bl		# set register bl to 1 or 0 based on cmpq
+	movzx	%bl, %rbx	# extend bl to rbx
+	addq	%rbx, %rsi	# add to overflow, even if add zero
 
 	movq	%r10, %rcx	# bring a to workspace
 	movl	%ecx, %ecx	# get lower 32-bits
@@ -207,7 +249,10 @@ mul256x256_256:	# computes mul256x256_256, where pointers: a in rdi, b in rsi, o
 	imulq	%rcx, %rdx	# multiply
 	movq	%rdx, %rbx	# remove dependancy from rdx
 	addq	%rbx, %rax	# add to accumulator rax
-	adcq	$0, %rsi	# if overflow, add to rsi
+	cmpq	%rax, %rbx	# compare rax and rbx
+	seta	%bl		# set register bl to 1 or 0 based on cmpq
+	movzx	%bl, %rbx	# extend bl to rbx
+	addq	%rbx, %rsi	# add to overflow, even if add zero
 
 	# write result for this limb, prepare for next limb
 	mov	%eax, 16(%rdi)	# write result for this 32-bit limb
@@ -226,7 +271,10 @@ mul256x256_256:	# computes mul256x256_256, where pointers: a in rdi, b in rsi, o
 	imulq	%rcx, %rdx	# multiply
 	movq	%rdx, %rbx	# remove dependancy from rdx
 	addq	%rbx, %rax	# add to accumulator rax
-	adcq	$0, %rsi	# if overflow, add to rsi
+	cmpq	%rax, %rbx	# compare rax and rbx
+	seta	%bl		# set register bl to 1 or 0 based on cmpq
+	movzx	%bl, %rbx	# extend bl to rbx
+	addq	%rbx, %rsi	# add to overflow, even if add zero
 
 	movq	%r8, %rcx	# bring a to workspace
 	shrq	$32, %rcx	# get upper 32-bits
@@ -235,7 +283,10 @@ mul256x256_256:	# computes mul256x256_256, where pointers: a in rdi, b in rsi, o
 	imulq	%rcx, %rdx	# multiply
 	movq	%rdx, %rbx	# remove dependancy from rdx
 	addq	%rbx, %rax	# add to accumulator rax
-	adcq	$0, %rsi	# if overflow, add to rsi
+	cmpq	%rax, %rbx	# compare rax and rbx
+	seta	%bl		# set register bl to 1 or 0 based on cmpq
+	movzx	%bl, %rbx	# extend bl to rbx
+	addq	%rbx, %rsi	# add to overflow, even if add zero
 
 	movq	%r9, %rcx	# bring a to workspace
 	movl	%ecx, %ecx	# get lower 32-bits
@@ -244,7 +295,10 @@ mul256x256_256:	# computes mul256x256_256, where pointers: a in rdi, b in rsi, o
 	imulq	%rcx, %rdx	# multiply
 	movq	%rdx, %rbx	# remove dependancy from rdx
 	addq	%rbx, %rax	# add to accumulator rax
-	adcq	$0, %rsi	# if overflow, add to rsi
+	cmpq	%rax, %rbx	# compare rax and rbx
+	seta	%bl		# set register bl to 1 or 0 based on cmpq
+	movzx	%bl, %rbx	# extend bl to rbx
+	addq	%rbx, %rsi	# add to overflow, even if add zero
 
 	movq	%r9, %rcx	# bring a to workspace
 	shrq	$32, %rcx	# get upper 32-bits
@@ -253,7 +307,10 @@ mul256x256_256:	# computes mul256x256_256, where pointers: a in rdi, b in rsi, o
 	imulq	%rcx, %rdx	# multiply
 	movq	%rdx, %rbx	# remove dependancy from rdx
 	addq	%rbx, %rax	# add to accumulator rax
-	adcq	$0, %rsi	# if overflow, add to rsi
+	cmpq	%rax, %rbx	# compare rax and rbx
+	seta	%bl		# set register bl to 1 or 0 based on cmpq
+	movzx	%bl, %rbx	# extend bl to rbx
+	addq	%rbx, %rsi	# add to overflow, even if add zero
 
 	movq	%r10, %rcx	# bring a to workspace
 	movl	%ecx, %ecx	# get lower 32-bits
@@ -262,7 +319,10 @@ mul256x256_256:	# computes mul256x256_256, where pointers: a in rdi, b in rsi, o
 	imulq	%rcx, %rdx	# multiply
 	movq	%rdx, %rbx	# remove dependancy from rdx
 	addq	%rbx, %rax	# add to accumulator rax
-	adcq	$0, %rsi	# if overflow, add to rsi
+	cmpq	%rax, %rbx	# compare rax and rbx
+	seta	%bl		# set register bl to 1 or 0 based on cmpq
+	movzx	%bl, %rbx	# extend bl to rbx
+	addq	%rbx, %rsi	# add to overflow, even if add zero
 
 	movq	%r10, %rcx	# bring a to workspace
 	shrq	$32, %rcx	# get upper 32-bits
@@ -271,7 +331,10 @@ mul256x256_256:	# computes mul256x256_256, where pointers: a in rdi, b in rsi, o
 	imulq	%rcx, %rdx	# multiply
 	movq	%rdx, %rbx	# remove dependancy from rdx
 	addq	%rbx, %rax	# add to accumulator rax
-	adcq	$0, %rsi	# if overflow, add to rsi
+	cmpq	%rax, %rbx	# compare rax and rbx
+	seta	%bl		# set register bl to 1 or 0 based on cmpq
+	movzx	%bl, %rbx	# extend bl to rbx
+	addq	%rbx, %rsi	# add to overflow, even if add zero
 
 	# write result for this limb, prepare for next limb
 	mov	%eax, 20(%rdi)	# write result for this 32-bit limb
@@ -290,7 +353,10 @@ mul256x256_256:	# computes mul256x256_256, where pointers: a in rdi, b in rsi, o
 	imulq	%rcx, %rdx	# multiply
 	movq	%rdx, %rbx	# remove dependancy from rdx
 	addq	%rbx, %rax	# add to accumulator rax
-	adcq	$0, %rsi	# if overflow, add to rsi
+	cmpq	%rax, %rbx	# compare rax and rbx
+	seta	%bl		# set register bl to 1 or 0 based on cmpq
+	movzx	%bl, %rbx	# extend bl to rbx
+	addq	%rbx, %rsi	# add to overflow, even if add zero
 
 	movq	%r8, %rcx	# bring a to workspace
 	shrq	$32, %rcx	# get upper 32-bits
@@ -299,7 +365,10 @@ mul256x256_256:	# computes mul256x256_256, where pointers: a in rdi, b in rsi, o
 	imulq	%rcx, %rdx	# multiply
 	movq	%rdx, %rbx	# remove dependancy from rdx
 	addq	%rbx, %rax	# add to accumulator rax
-	adcq	$0, %rsi	# if overflow, add to rsi
+	cmpq	%rax, %rbx	# compare rax and rbx
+	seta	%bl		# set register bl to 1 or 0 based on cmpq
+	movzx	%bl, %rbx	# extend bl to rbx
+	addq	%rbx, %rsi	# add to overflow, even if add zero
 
 	movq	%r9, %rcx	# bring a to workspace
 	movl	%ecx, %ecx	# get lower 32-bits
@@ -308,7 +377,10 @@ mul256x256_256:	# computes mul256x256_256, where pointers: a in rdi, b in rsi, o
 	imulq	%rcx, %rdx	# multiply
 	movq	%rdx, %rbx	# remove dependancy from rdx
 	addq	%rbx, %rax	# add to accumulator rax
-	adcq	$0, %rsi	# if overflow, add to rsi
+	cmpq	%rax, %rbx	# compare rax and rbx
+	seta	%bl		# set register bl to 1 or 0 based on cmpq
+	movzx	%bl, %rbx	# extend bl to rbx
+	addq	%rbx, %rsi	# add to overflow, even if add zero
 
 	movq	%r9, %rcx	# bring a to workspace
 	shrq	$32, %rcx	# get upper 32-bits
@@ -317,7 +389,10 @@ mul256x256_256:	# computes mul256x256_256, where pointers: a in rdi, b in rsi, o
 	imulq	%rcx, %rdx	# multiply
 	movq	%rdx, %rbx	# remove dependancy from rdx
 	addq	%rbx, %rax	# add to accumulator rax
-	adcq	$0, %rsi	# if overflow, add to rsi
+	cmpq	%rax, %rbx	# compare rax and rbx
+	seta	%bl		# set register bl to 1 or 0 based on cmpq
+	movzx	%bl, %rbx	# extend bl to rbx
+	addq	%rbx, %rsi	# add to overflow, even if add zero
 
 	movq	%r10, %rcx	# bring a to workspace
 	movl	%ecx, %ecx	# get lower 32-bits
@@ -326,7 +401,10 @@ mul256x256_256:	# computes mul256x256_256, where pointers: a in rdi, b in rsi, o
 	imulq	%rcx, %rdx	# multiply
 	movq	%rdx, %rbx	# remove dependancy from rdx
 	addq	%rbx, %rax	# add to accumulator rax
-	adcq	$0, %rsi	# if overflow, add to rsi
+	cmpq	%rax, %rbx	# compare rax and rbx
+	seta	%bl		# set register bl to 1 or 0 based on cmpq
+	movzx	%bl, %rbx	# extend bl to rbx
+	addq	%rbx, %rsi	# add to overflow, even if add zero
 
 	movq	%r10, %rcx	# bring a to workspace
 	shrq	$32, %rcx	# get upper 32-bits
@@ -335,7 +413,10 @@ mul256x256_256:	# computes mul256x256_256, where pointers: a in rdi, b in rsi, o
 	imulq	%rcx, %rdx	# multiply
 	movq	%rdx, %rbx	# remove dependancy from rdx
 	addq	%rbx, %rax	# add to accumulator rax
-	adcq	$0, %rsi	# if overflow, add to rsi
+	cmpq	%rax, %rbx	# compare rax and rbx
+	seta	%bl		# set register bl to 1 or 0 based on cmpq
+	movzx	%bl, %rbx	# extend bl to rbx
+	addq	%rbx, %rsi	# add to overflow, even if add zero
 
 	movq	%r11, %rcx	# bring a to workspace
 	movl	%ecx, %ecx	# get lower 32-bits
@@ -344,7 +425,10 @@ mul256x256_256:	# computes mul256x256_256, where pointers: a in rdi, b in rsi, o
 	imulq	%rcx, %rdx	# multiply
 	movq	%rdx, %rbx	# remove dependancy from rdx
 	addq	%rbx, %rax	# add to accumulator rax
-	adcq	$0, %rsi	# if overflow, add to rsi
+	cmpq	%rax, %rbx	# compare rax and rbx
+	seta	%bl		# set register bl to 1 or 0 based on cmpq
+	movzx	%bl, %rbx	# extend bl to rbx
+	addq	%rbx, %rsi	# add to overflow, even if add zero
 
 	# write result for this limb, prepare for next limb
 	mov	%eax, 24(%rdi)	# write result for this 32-bit limb
@@ -363,7 +447,10 @@ mul256x256_256:	# computes mul256x256_256, where pointers: a in rdi, b in rsi, o
 	imulq	%rcx, %rdx	# multiply
 	movq	%rdx, %rbx	# remove dependancy from rdx
 	addq	%rbx, %rax	# add to accumulator rax
-	adcq	$0, %rsi	# if overflow, add to rsi
+	cmpq	%rax, %rbx	# compare rax and rbx
+	seta	%bl		# set register bl to 1 or 0 based on cmpq
+	movzx	%bl, %rbx	# extend bl to rbx
+	addq	%rbx, %rsi	# add to overflow, even if add zero
 
 	movq	%r8, %rcx	# bring a to workspace
 	shrq	$32, %rcx	# get upper 32-bits
@@ -372,7 +459,10 @@ mul256x256_256:	# computes mul256x256_256, where pointers: a in rdi, b in rsi, o
 	imulq	%rcx, %rdx	# multiply
 	movq	%rdx, %rbx	# remove dependancy from rdx
 	addq	%rbx, %rax	# add to accumulator rax
-	adcq	$0, %rsi	# if overflow, add to rsi
+	cmpq	%rax, %rbx	# compare rax and rbx
+	seta	%bl		# set register bl to 1 or 0 based on cmpq
+	movzx	%bl, %rbx	# extend bl to rbx
+	addq	%rbx, %rsi	# add to overflow, even if add zero
 
 	movq	%r9, %rcx	# bring a to workspace
 	movl	%ecx, %ecx	# get lower 32-bits
@@ -381,7 +471,10 @@ mul256x256_256:	# computes mul256x256_256, where pointers: a in rdi, b in rsi, o
 	imulq	%rcx, %rdx	# multiply
 	movq	%rdx, %rbx	# remove dependancy from rdx
 	addq	%rbx, %rax	# add to accumulator rax
-	adcq	$0, %rsi	# if overflow, add to rsi
+	cmpq	%rax, %rbx	# compare rax and rbx
+	seta	%bl		# set register bl to 1 or 0 based on cmpq
+	movzx	%bl, %rbx	# extend bl to rbx
+	addq	%rbx, %rsi	# add to overflow, even if add zero
 
 	movq	%r9, %rcx	# bring a to workspace
 	shrq	$32, %rcx	# get upper 32-bits
@@ -390,7 +483,10 @@ mul256x256_256:	# computes mul256x256_256, where pointers: a in rdi, b in rsi, o
 	imulq	%rcx, %rdx	# multiply
 	movq	%rdx, %rbx	# remove dependancy from rdx
 	addq	%rbx, %rax	# add to accumulator rax
-	adcq	$0, %rsi	# if overflow, add to rsi
+	cmpq	%rax, %rbx	# compare rax and rbx
+	seta	%bl		# set register bl to 1 or 0 based on cmpq
+	movzx	%bl, %rbx	# extend bl to rbx
+	addq	%rbx, %rsi	# add to overflow, even if add zero
 
 	movq	%r10, %rcx	# bring a to workspace
 	movl	%ecx, %ecx	# get lower 32-bits
@@ -399,7 +495,10 @@ mul256x256_256:	# computes mul256x256_256, where pointers: a in rdi, b in rsi, o
 	imulq	%rcx, %rdx	# multiply
 	movq	%rdx, %rbx	# remove dependancy from rdx
 	addq	%rbx, %rax	# add to accumulator rax
-	adcq	$0, %rsi	# if overflow, add to rsi
+	cmpq	%rax, %rbx	# compare rax and rbx
+	seta	%bl		# set register bl to 1 or 0 based on cmpq
+	movzx	%bl, %rbx	# extend bl to rbx
+	addq	%rbx, %rsi	# add to overflow, even if add zero
 
 	movq	%r10, %rcx	# bring a to workspace
 	shrq	$32, %rcx	# get upper 32-bits
@@ -408,7 +507,10 @@ mul256x256_256:	# computes mul256x256_256, where pointers: a in rdi, b in rsi, o
 	imulq	%rcx, %rdx	# multiply
 	movq	%rdx, %rbx	# remove dependancy from rdx
 	addq	%rbx, %rax	# add to accumulator rax
-	adcq	$0, %rsi	# if overflow, add to rsi
+	cmpq	%rax, %rbx	# compare rax and rbx
+	seta	%bl		# set register bl to 1 or 0 based on cmpq
+	movzx	%bl, %rbx	# extend bl to rbx
+	addq	%rbx, %rsi	# add to overflow, even if add zero
 
 	movq	%r11, %rcx	# bring a to workspace
 	movl	%ecx, %ecx	# get lower 32-bits
@@ -417,7 +519,10 @@ mul256x256_256:	# computes mul256x256_256, where pointers: a in rdi, b in rsi, o
 	imulq	%rcx, %rdx	# multiply
 	movq	%rdx, %rbx	# remove dependancy from rdx
 	addq	%rbx, %rax	# add to accumulator rax
-	adcq	$0, %rsi	# if overflow, add to rsi
+	cmpq	%rax, %rbx	# compare rax and rbx
+	seta	%bl		# set register bl to 1 or 0 based on cmpq
+	movzx	%bl, %rbx	# extend bl to rbx
+	addq	%rbx, %rsi	# add to overflow, even if add zero
 
 	movq	%r11, %rcx	# bring a to workspace
 	shrq	$32, %rcx	# get upper 32-bits
@@ -426,7 +531,10 @@ mul256x256_256:	# computes mul256x256_256, where pointers: a in rdi, b in rsi, o
 	imulq	%rcx, %rdx	# multiply
 	movq	%rdx, %rbx	# remove dependancy from rdx
 	addq	%rbx, %rax	# add to accumulator rax
-	adcq	$0, %rsi	# if overflow, add to rsi
+	cmpq	%rax, %rbx	# compare rax and rbx
+	seta	%bl		# set register bl to 1 or 0 based on cmpq
+	movzx	%bl, %rbx	# extend bl to rbx
+	addq	%rbx, %rsi	# add to overflow, even if add zero
 
 	# write result for this limb, prepare for next limb
 	mov	%eax, 28(%rdi)	# write result for this 32-bit limb
