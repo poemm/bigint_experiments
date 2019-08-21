@@ -8,18 +8,6 @@ funciton mul256x256_512 multiplies unaliased bigint values; out <- a*b
 
 gcc -std=c99 callmul256x256_512.c mul256x256_512.s -fno-pie -no-pie
 
-
-
-# generate tests in python
-import random 
-in_bits = 256 
-out_bits = 256 
-for i in range(100): 
-  a=random.randint(0,2**in_bits-1) 
-  b=random.randint(0,2**in_bits-1) 
-  out=(a*b)%(2**out_bits) 
-  print("./a.out "+hex(a)+" "+hex(b)+" "+hex(out)+"\n") 
-
 */
 
 #include <stdio.h>
@@ -99,7 +87,12 @@ int main(int argc, char** argv) {
   if (argc==1){
     hexstr_to_bytearray("000000000000000000000000000000000000000000000000ffffffffffffffff",(uint8_t*)a);
     hexstr_to_bytearray("000000000000000000000000000000000000000000000000ffffffffffffffff",(uint8_t*)b);
-    hexstr_to_bytearray("0000000000000000000000000000000000000000000000000000000000000000",(uint8_t*)out_expected);
+    hexstr_to_bytearray("00000000000000000000000000000000fffffffffffffffe0000000000000001",(uint8_t*)out_expected);
+    //hexstr_to_bytearray("00000000000000000000000000000000000000000000000000000000ffffffff",(uint8_t*)a);
+    //hexstr_to_bytearray("00000000000000000000000000000000000000000000000000000000ffffffff",(uint8_t*)b);
+    //hexstr_to_bytearray("000000000000000000000000000000000000000000000000fffffffe00000001",(uint8_t*)out_expected);
+
+   
   }
   else{
     hexstr_to_bytearray(argv[1]+2,(uint8_t*)a);
@@ -118,6 +111,7 @@ int main(int argc, char** argv) {
     if (out[i]!=out_expected[i])
       error=1;
   }
+  //error = 1;
   if (error){
     for (int i=0; i<16; i++)
       printf(" %08x", ((uint32_t*)a)[i]);
@@ -130,6 +124,7 @@ int main(int argc, char** argv) {
     printf("\n");
     for (int i=0; i<16; i++)
       printf(" %08x", ((uint32_t*)out_expected)[i]);
+    printf("\n");
     printf("\n");
   }
   else
