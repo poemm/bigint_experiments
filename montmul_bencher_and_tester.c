@@ -82,7 +82,7 @@ void montgomery_multiplication_256(uint64_t* x, uint64_t* y, uint64_t* m, uint64
    // final subtraction, first see if necessary
    // this out <= m check is untested
    int out_ge_m = 1;
-   for (int i=3;i<0;i--){
+   for (int i=3;i>=0;i--){
      if (out[i] < m[i]){
        out_ge_m=0;
        break;
@@ -101,6 +101,65 @@ void montgomery_multiplication_256(uint64_t* x, uint64_t* y, uint64_t* m, uint64
         out[i] = temp-m[i];
       }
     }
+}
+
+
+// algorithm 14.36, Handbook of Applied Cryptography, http://cacr.uwaterloo.ca/hac/about/chap14.pdf
+void montgomery_multiplication_384(uint64_t* restrict x, uint64_t* restrict y, uint64_t* restrict m, uint64_t* restrict inv, uint64_t* restrict out){
+  uint64_t A[12] = {0};
+  //#pragma unroll      // this unroll increases binary size by a lot
+  for (int i=0; i<6; i++){
+    uint64_t ui = (A[i]+x[i]*y[0])*inv[0];
+    uint64_t carry = 0;
+    #pragma unroll
+    for (int j=0; j<6; j++){
+      uint128_t xiyj = (uint128_t)x[i]*y[j];
+      uint128_t uimj = (uint128_t)ui*m[j];
+      uint128_t partial_sum = xiyj+carry+A[i+j];
+      uint128_t sum = uimj+partial_sum;
+      A[i+j] = (uint64_t)sum;
+      carry = sum>>LIMB_BITS;
+      // if there was overflow in the sum beyond the carry:
+      if (sum<partial_sum){
+        int k=2;
+        while ( i+j+k<12 && A[i+j+k]==(uint64_t)0-1 ){ // note 0-1 is 0xffffffff
+          A[i+j+k]=0;
+          k++;
+        }
+        if (i+j+k<12)
+          A[i+j+k]+=1;
+      }
+      //printf("%d %d %llu %llu %llu %llu %llu %llu %llu %llu %llu\n",i,j,x[i],x[i]*y[0],ui,xiyj,uimj,partial_sum,sum,A[i+j],carry);
+    }
+    A[i+6]+=carry;
+  }
+
+  // instead of right shift, we just get the correct values
+  #pragma unroll
+  for (int i=0; i<6;i++)
+    out[i] = A[i+6];
+
+  // final subtraction, first see if necessary
+  int out_ge_m = 1;
+  for (int i=5;i>=0;i--){
+    if (out[i] < m[i]){
+      out_ge_m=0;
+      break;
+    }
+    else if (out[i]>m[i])
+      break;
+  }
+
+  if (out_ge_m){
+    // subtract 256 for x>=y, this is algorithm 14.9
+    // this subtraction is untested
+    uint64_t carry=0;
+    for (int i=0; i<6;i++){
+      uint64_t temp = out[i]-carry;
+      carry = (temp<m[i] || out[i]<carry) ? 1:0;
+      out[i] = temp-m[i];
+    }
+  }
 }
 
 

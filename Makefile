@@ -1,15 +1,13 @@
 
 default: bench
 
-bench:
+bench: bench256 bench768
+
+bench256:
 	gcc montmul_bencher_and_tester.c -o montmul_bencher_gcc_32bit_8limb -w -DBIGINT_BITS=256 -DLIMB_BITS=32 -DLIMB_BITS_OVERFLOW=64
-	gcc montmul_bencher_and_tester.c -o montmul_bencher_gcc_32bit_24limb -w -DBIGINT_BITS=768 -DLIMB_BITS=32 -DLIMB_BITS_OVERFLOW=64
 	clang montmul_bencher_and_tester.c -o montmul_bencher_clang_32bit_8limb -w -DBIGINT_BITS=256 -DLIMB_BITS=32 -DLIMB_BITS_OVERFLOW=64
-	clang montmul_bencher_and_tester.c -o montmul_bencher_clang_32bit_24limb -w -DBIGINT_BITS=768 -DLIMB_BITS=32 -DLIMB_BITS_OVERFLOW=64
 	gcc montmul_bencher_and_tester.c -o montmul_bencher_gcc_64bit_4limb -w -DBIGINT_BITS=256 -DLIMB_BITS=64 -DLIMB_BITS_OVERFLOW=128
-	gcc montmul_bencher_and_tester.c -o montmul_bencher_gcc_64bit_12limb -w -DBIGINT_BITS=768 -DLIMB_BITS=64 -DLIMB_BITS_OVERFLOW=128
 	clang montmul_bencher_and_tester.c -o montmul_bencher_clang_64bit_4limb -w -DBIGINT_BITS=256 -DLIMB_BITS=64 -DLIMB_BITS_OVERFLOW=128
-	clang montmul_bencher_and_tester.c -o montmul_bencher_clang_64bit_12limb -w -DBIGINT_BITS=768 -DLIMB_BITS=64 -DLIMB_BITS_OVERFLOW=128
 	echo ---------------------------------
 	echo montgomery multiplication 256-bit
 	echo 8 32-bit limbs using gcc
@@ -20,6 +18,12 @@ bench:
 	time -f "\t%E real,\t%U user,\t%S sys" ./montmul_bencher_gcc_64bit_4limb 0x3f1c1f052ec7fcf3ae9235e365227456e0aad70660a12b598614c8fa584a1535 0x727b764436a7fbecec677e27eb8adb718ac19edf0412d4cb3b744672b7a302c7 0x30644e72e131a029b85045b68181585d97816a916871ca8d3c208c16d87cfd47 0x2ddccb3fa965bcb892d206fbf462e21f9ede7d651eca6ac987d20782e4866389 0x2d9e16714fc4fd748028191997556608dd3674723007b6a6303982d89a84056
 	echo 4 64-bit limbs using clang
 	time -f "\t%E real,\t%U user,\t%S sys" ./montmul_bencher_clang_64bit_4limb 0x3f1c1f052ec7fcf3ae9235e365227456e0aad70660a12b598614c8fa584a1535 0x727b764436a7fbecec677e27eb8adb718ac19edf0412d4cb3b744672b7a302c7 0x30644e72e131a029b85045b68181585d97816a916871ca8d3c208c16d87cfd47 0x2ddccb3fa965bcb892d206fbf462e21f9ede7d651eca6ac987d20782e4866389 0x2d9e16714fc4fd748028191997556608dd3674723007b6a6303982d89a84056
+
+bench768:
+	gcc montmul_bencher_and_tester.c -o montmul_bencher_gcc_32bit_24limb -w -DBIGINT_BITS=768 -DLIMB_BITS=32 -DLIMB_BITS_OVERFLOW=64
+	clang montmul_bencher_and_tester.c -o montmul_bencher_clang_32bit_24limb -w -DBIGINT_BITS=768 -DLIMB_BITS=32 -DLIMB_BITS_OVERFLOW=64
+	gcc montmul_bencher_and_tester.c -o montmul_bencher_gcc_64bit_12limb -w -DBIGINT_BITS=768 -DLIMB_BITS=64 -DLIMB_BITS_OVERFLOW=128
+	clang montmul_bencher_and_tester.c -o montmul_bencher_clang_64bit_12limb -w -DBIGINT_BITS=768 -DLIMB_BITS=64 -DLIMB_BITS_OVERFLOW=128
 	echo ---------------------------------
 	echo montgomery multiplication 768-bit
 	echo 24 32-bit limbs using gcc
