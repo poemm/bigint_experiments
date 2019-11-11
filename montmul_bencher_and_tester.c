@@ -55,6 +55,65 @@ void montgomery_multiplication_256(uint64_t* x, uint64_t* y, uint64_t* m, uint64
      for (int j=0; j<4; j++){
        uint128_t xiyj = (uint128_t)x[i]*y[j];
        uint128_t uimj = (uint128_t)ui*m[j];
+       uint128_t partial_sum = xiyj+carry+A[i+j];
+       uint128_t sum = uimj+partial_sum;
+       A[i+j] = (uint64_t)sum;
+       carry = sum>>64;
+       // if there was overflow in the sum beyond the carry bits
+       if (sum<partial_sum){
+         int k=2;
+         while ( i+j+k<8 && A[i+j+k]==0xffffffffffffffff ){
+           A[i+j+k]=0;
+           k++;
+         }
+         if (i+j+k<8)
+           A[i+j+k]+=1;
+       }
+     }
+     A[i+4]+=carry;
+   }
+
+   // instead of right shift, we just get the correct values
+   out[0] = A[4];
+   out[1] = A[5];
+   out[2] = A[6];
+   out[3] = A[7];
+
+   // final subtraction, first see if necessary
+   // this out <= m check is untested
+   int out_ge_m = 1;
+   for (int i=3;i<0;i--){
+     if (out[i] < m[i]){
+       out_ge_m=0;
+       break;
+     }
+     else if (out[i]>m[i])
+       break;
+   }
+
+   if (out_ge_m){
+      // subtract 256 for x>=y, this is algorithm 14.9
+      // this subtraction is untested
+      uint64_t carry=0;
+      for (int i=0; i<4;i++){
+        uint64_t temp = out[i]-carry;
+        carry = (temp<m[i] || out[i]<carry) ? 1:0;
+        out[i] = temp-m[i];
+      }
+    }
+}
+
+
+/* this is the original code
+void montgomery_multiplication_256_orig(uint64_t* x, uint64_t* y, uint64_t* m, uint64_t* inv, uint64_t* out){
+   uint64_t A[] = {0,0,0,0,0,0,0,0};
+   for (int i=0; i<4; i++){
+     uint64_t ui = (A[i]+x[i]*y[0])*inv[0];
+     uint64_t carry = 0;
+     //uint64_t overcarry = 0;
+     for (int j=0; j<4; j++){
+       uint128_t xiyj = (uint128_t)x[i]*y[j];
+       uint128_t uimj = (uint128_t)ui*m[j];
        uint128_t partial_sum = xiyj+carry;
        uint128_t sum = uimj+A[i+j]+partial_sum;
        A[i+j] = (uint64_t)sum;
@@ -90,21 +149,27 @@ void montgomery_multiplication_256(uint64_t* x, uint64_t* y, uint64_t* m, uint64
      else if (out[4-i-1]>m[4-i-1])
        break;
    }
+
    if (out_ge_m){
       // subtract 256 for x>=y, this is algorithm 14.9
       // this subtraction is untested
       uint64_t c=0;
       for (int i=0; i<4;i++){
-        uint64_t temp = out[i]-m[i]-c;
-        if (out[i]>=m[i]+c)
-          c=0;
-        else
-          c=1;
-        out[i]=temp;
+        uint64_t temp = out[i]-c;
+        out[i] = temp-m[i];
+        c = (temp<m[i] || out[i]<c) ? 1:0;
+	// bad, bug here is fixed above
+        //uint64_t temp = out[i]-m[i]-c;
+        //if (out[i]>=m[i]+c)
+        //  c=0;
+        //else
+        //  c=1;
+        //out[i]=temp;
       }
     }
+    //std::cout << "montgomery_multiplication_256 end." << std::endl;
 }
-
+*/
 
 int main(int argc, char** argv){
 
@@ -124,16 +189,16 @@ int main(int argc, char** argv){
   hexstr_to_bytearray(argv[5]+2,(uint8_t*)out_expected);
 
 // flip this to do testing or benching
-#if 0
+#if 1
   montgomery_multiplication_256(x, y, m, inv, out);
   for (int i=0; i<NUM_LIMBS; i++){
     if (out[i]!=out_expected[i]){
       printf("ERROR: expected vs actual output:\n");
       for (int i=0; i<NUM_LIMBS; i++)
-        printf("%x ",out_expected[i]);
+        printf("0x%x, ",out_expected[i]);
       printf("\n");
       for (int i=0; i<NUM_LIMBS; i++)
-        printf("%x ",out[i]);
+        printf("0x%x, ",out[i]);
       printf("\n");
       break;
     }
