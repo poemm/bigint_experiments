@@ -16,14 +16,14 @@ def add(x,y,out,base,num_limbs):
     out[i]=carry
 
 # algorithm 14.9, Handbook of Applied Cryptography, http://cacr.uwaterloo.ca/hac/about/chap14.pdf
+# but algorithm 14.9 uses negative numbers, which we don't support, so we modify it, needs review
 # subtract x-y for x>=y
 def subtract(x,y,out,base,num_limbs):
   carry=0
   for i in range(num_limbs):
-    temp1=(y[i]+carry)%base
-    temp2=(x[i]-temp1)%base
-    carry = 0 if x[i]>=temp1 else 1
-    out[i] = temp2
+    tmp1 = (x[i]-carry)%base
+    out[i] = (tmp1-y[i])%base
+    carry = 1 if tmp1<y[i] or x[i]<carry else 0
 
 # less-than operator <
 def less_than(x,y,num_limbs):
@@ -198,7 +198,7 @@ if __name__ == "__main__":
     print(out == expected)
     #print([hex(e) for e in out])
     #print([hex(e) for e in expected])
-  if 1:
+  if 0:
     num_limbs=3
     base=10
     out=[0]*num_limbs*2
@@ -214,4 +214,29 @@ if __name__ == "__main__":
     print(out == expected)
     #print([hex(e) for e in out])
     #print([hex(e) for e in expected])
-
+  if 1:
+    num_limbs=5
+    base=10
+    out_=[0]*num_limbs
+    # parse args
+    import random
+    a=random.randint(0,base**num_limbs-1)
+    b=random.randint(0,base**num_limbs-1)
+    if a<b:
+      a,b=b,a
+    a_=int_to_digits(a,base)
+    b_=int_to_digits(b,base)
+    expected_=int_to_digits(a-b,base)
+    # make sure args have the right size
+    a_=a_+([0]*(num_limbs-len(a_)))
+    b_=b_+([0]*(num_limbs-len(b_)))
+    expected_=expected_+([0]*(num_limbs-len(expected_)))
+    # perform operation
+    subtract(a_,b_,out_,base,num_limbs)
+    flag = out_ == expected_
+    print(out_ == expected_)
+    #if out_ != expected_:
+    print(a_)
+    print(b_)
+    print(out_)
+    print(expected_)

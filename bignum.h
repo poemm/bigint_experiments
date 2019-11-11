@@ -73,14 +73,15 @@ void FUNCNAME(add)(UINT* restrict x, UINT* restrict y, UINT* restrict out){
 
 // compute x-y for x>=y
 // algorithm 14.9, Handbook of Applied Cryptography, http://cacr.uwaterloo.ca/hac/about/chap14.pdf
+// but algorithm 14.9 uses negative numbers, which we don't support, so we modify it, needs review
 void FUNCNAME(subtract)(UINT* restrict x, UINT* restrict y, UINT* restrict out){
   //printf("subtract()\n");
   UINT carry=0;
   #pragma unroll
   for (int i=0; i<N;i++){
-    UINT temp = x[i]-carry-y[i];
-    carry = temp>x[i] ? 1:0;
-    out[i]=temp;
+    UINT temp = x[i]-carry;
+    out[i] = temp-y[i];
+    carry = (temp<y[i] || x[i]<carry) ? 1:0;
   }
 }
 
@@ -228,8 +229,8 @@ void FUNCNAME(montmul)(UINT* restrict x, UINT* restrict y, UINT* restrict m, UIN
 // algorithm 14.36, Handbook of Applied Cryptography, http://cacr.uwaterloo.ca/hac/about/chap14.pdf
 // this is a copy/paste of the one above, but with signature x,y,out, and hard-coded m and inv.
 void FUNCNAME(montmul_3args_)(UINT* restrict x, UINT* restrict y, UINT* restrict out){
-  UINT* m = (UINT*)88888;
-  UINT* inv = (UINT*)99999;
+  UINT* m = (UINT*)4444444;
+  UINT* inv = (UINT*)6666666;
   UINT A[N*2] = {0};
   //#pragma unroll	// this unroll increases binary size by a lot
   for (int i=0; i<N; i++){
