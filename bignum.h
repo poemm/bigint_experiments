@@ -8,7 +8,8 @@
 /*
 This library requires two parameters:
 BIGINT_BITS - the number of bits of the big integer
-LIMB_BITS - the number of bits in each limb
+LIMB_BITS - the number of bits in each limb, must correspond to a uint*_t type
+LIMB_BITS_OVERFLOW - the number of bits output by multiplication, i.e. 2*LIMB_BITS, must correspond to a uint*_t type
 
 To use this library, define a limb size and include it:
   #define BIGINT_BITS 256
