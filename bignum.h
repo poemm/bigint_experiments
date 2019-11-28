@@ -90,7 +90,7 @@ void FUNCNAME(subtract)(UINT* restrict x, UINT* restrict y, UINT* restrict out){
 
 // checks whether x<y
 // TODO: reference spec of this algorithm
-UINT FUNCNAME(less_than)(UINT* restrict x, UINT* restrict y){
+uint8_t FUNCNAME(less_than)(UINT* restrict x, UINT* restrict y){
   for (int i=NUM_LIMBS-1;i>=0;i--){
     if (x[i]>y[i])
       return 0;
@@ -104,7 +104,7 @@ UINT FUNCNAME(less_than)(UINT* restrict x, UINT* restrict y){
 // checks whether x<=y
 // NUM_LIMBS is number of limbs
 // TODO: reference spec of this algorithm
-UINT FUNCNAME(less_than_or_equal)(UINT* restrict x, UINT* restrict y){
+uint8_t FUNCNAME(less_than_or_equal)(UINT* restrict x, UINT* restrict y){
   for (int i=NUM_LIMBS-1;i>=0;i--){
     if (x[i]>y[i])
       return 0;
@@ -115,11 +115,35 @@ UINT FUNCNAME(less_than_or_equal)(UINT* restrict x, UINT* restrict y){
   return 1;
 }
 
+// algorithm 14.12, Handbook of Applied Cryptography, http://cacr.uwaterloo.ca/hac/about/chap14.pdf
+// but assume they both have the same number of limbs, this can be changed
+// out should have double the limbs of inputs
+// num_limbs corresponds to n+1 in the book
+void FUNCNAME(mul)(UINT* restrict x, UINT* restrict y, UINT* restrict out){
+  UINT* w = out;
+  for (int i=0; i<2*NUM_LIMBS; i++)
+    w[i]=0;
+  for (int i=0; i<NUM_LIMBS; i++){
+    UINT c = 0;
+    for (int j=0; j<NUM_LIMBS; j++){
+      UINT2 uv = (UINT2)w[i+j] + (UINT2)x[j]*y[i];
+      uv += c;
+      UINT2 u = uv >> LIMB_BITS;
+      UINT v = uv;
+      w[i+j] = v;
+      c = u;
+    }
+    w[i+NUM_LIMBS] = c;
+  }
+  //for (int i=0; i< 2*NUM_LIMBS; i++)
+  //  out[i]=w[i];
+}
+
 // algorithm 14.16, Handbook of Applied Cryptography, http://cacr.uwaterloo.ca/hac/about/chap14.pdf
 // NUM_LIMBS is t (number of limbs) in the book, and the base is UINT*, usually uint32_t or uint64_t
 // output out should have double the limbs of input x
 void FUNCNAME(square)(UINT* x, UINT* out){
-  UINT2 w[NUM_LIMBS*2];
+  UINT w[NUM_LIMBS*2];
   for (int i=0; i< 2*NUM_LIMBS; i++)
     w[i]=0;
   for (int i=0; i<NUM_LIMBS; i++){

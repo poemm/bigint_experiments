@@ -21,14 +21,15 @@ test:
 	python3 generate_tests.py lessthan 256 tests.sh ./test256_64 $(num_tests)
 	python3 generate_tests.py lessthanequal 256 tests.sh ./test256_32 $(num_tests)
 	python3 generate_tests.py lessthanequal 256 tests.sh ./test256_64 $(num_tests)
-	#python3 generate_tests.py mul 256 tests.sh ./test256_32 $(num_tests)
-	#python3 generate_tests.py mul 256 tests.sh ./test256_64 $(num_tests)
+	python3 generate_tests.py mul 256 tests.sh ./test256_32 $(num_tests)
+	python3 generate_tests.py mul 256 tests.sh ./test256_64 $(num_tests)
 	python3 generate_tests.py montmul 256 tests.sh ./test256_32 $(num_tests)
 	python3 generate_tests.py montmul 256 tests.sh ./test256_64 $(num_tests)
 	bash tests.sh
+	rm tests.sh
 
 
-bench:
+bench_montmul:
 	echo ---------------------------------
 	echo montgomery multiplication 256-bit as 32-bit limbs 100000 iters
 	${compiler} test_and_bench.c -o test256_32 -w -DBIGINT_BITS=256 -DLIMB_BITS=32 -DLIMB_BITS_OVERFLOW=64 -DNUM_ITERS=100000
@@ -39,6 +40,20 @@ bench:
 	echo montgomery multiplication 256-bit as 64-bit limbs 100000 iters
 	${compiler} test_and_bench.c -o test256_64 -w -DBIGINT_BITS=256 -DLIMB_BITS=64 -DLIMB_BITS_OVERFLOW=128 -DNUM_ITERS=100000
 	python3 generate_tests.py montmul 256 tests.sh time\ ./test256_64 1
+	bash tests.sh
+	rm tests.sh
+
+bench_mul:
+	echo ---------------------------------
+	echo multiplication 256-bit as 32-bit limbs 1000000 iters
+	${compiler} test_and_bench.c -o test256_32 -w -DBIGINT_BITS=256 -DLIMB_BITS=32 -DLIMB_BITS_OVERFLOW=64 -DNUM_ITERS=1000000
+	python3 generate_tests.py mul 256 tests.sh time\ ./test256_32 1
+	bash tests.sh
+	rm tests.sh
+	echo ---------------------------------
+	echo multiplication 256-bit as 64-bit limbs 1000000 iters
+	${compiler} test_and_bench.c -o test256_64 -w -DBIGINT_BITS=256 -DLIMB_BITS=64 -DLIMB_BITS_OVERFLOW=128 -DNUM_ITERS=1000000
+	python3 generate_tests.py mul 256 tests.sh time\ ./test256_64 1
 	bash tests.sh
 	rm tests.sh
 

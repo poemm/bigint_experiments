@@ -24,6 +24,28 @@ def subtract(x,y,out,base,num_limbs):
     out[i] = (tmp1-y[i])%base
     carry = 1 if tmp1<y[i] or x[i]<carry else 0
 
+
+# algorithm 14.12, Handbook of Applied Cryptography, http://cacr.uwaterloo.ca/hac/about/chap14.pdf
+# but assume they both have the same number of limbs, this can be changed
+# out should have double the limbs of inputs
+# num_limbs corresponds to n+1 in the book
+def mul(x,y,out,base,num_limbs):
+  w = out
+  for i in range(2*num_limbs):
+    w[i]=0
+  for i in range(num_limbs):
+    c = 0
+    for j in range(num_limbs):
+      print(i,j,c)
+      uv = w[i+j] + x[j]*y[i] + c
+      w[i+j] = uv % base
+      c = uv // base
+      print(x[j]*y[i],c,w[i+j])
+      print(w)
+    w[i+num_limbs] = c
+    print(w)
+
+
 # less-than operator <
 def less_than(x,y,num_limbs):
   for i in range(num_limbs-1,-1,-1):
@@ -177,6 +199,25 @@ def test_mont_reduce():
   #print([hex(e) for e in out])
   #print([hex(e) for e in expected])
 
+def test_mul():
+  num_limbs=4
+  base=10
+  out=[0]*num_limbs*2
+  # parse args
+  x=int_to_digits(9274,base)
+  y=int_to_digits(847,base)
+  expected=int_to_digits(7855078,base)
+  # make sure args have the right size
+  x=x+([0]*(2*num_limbs-len(x)))
+  y=y+([0]*(2*num_limbs-len(y)))
+  expected=expected+([0]*(2*num_limbs-len(expected)))
+  #print(x,y,m,inv,expected)
+  # perform operation
+  mul(x,y,out,base,num_limbs)
+  print(out == expected)
+  print([hex(e) for e in out])
+  print([hex(e) for e in expected])
+
 def test_square():
   num_limbs=3
   base=10
@@ -249,10 +290,12 @@ def test_montmul():
 if __name__ == "__main__":
   # this just tests montgomery multiplication for now
   # use like this: python3 bignum.py montmul 0x5bf1157a72e0c409a169d2f0d036bcb9f9090b25c25b27d090c2d9e9bc21f4da 0xd9dc1c4c37ce4b73d08901b7b771bcf905f78da0df88858f115bcc6dc24de3e4 0x30644e72e131a029b85045b68181585d97816a916871ca8d3c208c16d87cfd47 0x2ddccb3fa965bcb892d206fbf462e21f9ede7d651eca6ac987d20782e4866389 0x275614dc5a747e3e5e9e4b286d5e4ba1c41b8afd1cb65e567b13f64a160a48ed
+  test_mul()
   import sys
   # consts and preallocated output
-  if sys.argc<2:
+  if len(sys.argv)<2:
     print("first arg is test name")
+    exit()
   if sys.argv[1]=="montmul":
     num_limbs=8
     base=2**32
