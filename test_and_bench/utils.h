@@ -58,7 +58,6 @@ void reverse_bytearray(char* in, int length){
     *(in+i)=*(in+length-1-i);
     *(in+length-1-i)=temp;
   }
-  return in;
 }
 
 // reverse bytes of hex string without '0x' (or corresponding pairs of characters for non-hex string)
