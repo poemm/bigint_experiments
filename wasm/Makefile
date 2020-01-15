@@ -142,6 +142,7 @@ montsquare256_64bitlimbs:
 montsquare_all: montsquare256_32bitlimbs montsquare256_64bitlimbs
 
 
+all: mul_all montmul_all montsquare_all
 
 
 ################
@@ -150,35 +151,64 @@ montsquare_all: montsquare256_32bitlimbs montsquare256_64bitlimbs
 
 # to create make a new benchmark, add it here and in bench.c
 
-montmul256_32bitlimbs_bench:
+bench_mul256_32bitlimbs:
 	make project \
-	PROJECT=montmul256_32bitlimbs_bench \
+	PROJECT=bench_mul256_32bitlimbs \
 	SOURCE=bench.c \
-	EXPORTS="-export=montmul256_64bitlimbs_bench"
-	time -v $(WABT_DIR)/wasm-interp montmul256_64bitlimbs_bench.wasm --run-all-exports
+	EXPORTS="-export=bench_mul256_32bitlimbs"
+	time -v $(WABT_DIR)/wasm-interp bench_mul256_32bitlimbs.wasm --run-all-exports
 
-montmul256_64bitlimbs_bench:
+bench_mul256_64bitlimbs:
 	make project \
-	PROJECT=montmul256_64bitlimbs_bench \
+	PROJECT=bench_mul256_64bitlimbs \
 	SOURCE=bench.c \
-	EXPORTS="-export=montmul256_64bitlimbs_bench"
-	time -v $(WABT_DIR)/wasm-interp montmul256_32bitlimbs_bench.wasm --run-all-exports
+	EXPORTS="-export=bench_mul256_64bitlimbs"
+	time -v $(WABT_DIR)/wasm-interp bench_mul256_64bitlimbs.wasm --run-all-exports
 
-montmul768_32bitlimbs_bench:
+bench_montmul256_32bitlimbs:
 	make project \
-	PROJECT=montmul768_32bitlimbs_bench \
+	PROJECT=bench_montmul256_32bitlimbs \
 	SOURCE=bench.c \
-	EXPORTS="-export=montmul768_32bitlimbs_bench"
-	time -v $(WABT_DIR)/wasm-interp montmul768_32bitlimbs_bench.wasm --run-all-exports
+	EXPORTS="-export=bench_montmul256_32bitlimbs"
+	time -v $(WABT_DIR)/wasm-interp bench_montmul256_32bitlimbs.wasm --run-all-exports
 
-montmul768_64bitlimbs_bench:
+bench_montmul256_64bitlimbs:
 	make project \
-	PROJECT=montmul768_64bitlimbs_bench \
+	PROJECT=bench_montmul256_64bitlimbs \
 	SOURCE=bench.c \
-	EXPORTS="-export=montmul768_64bitlimbs_bench"
-	time -v $(WABT_DIR)/wasm-interp montmul768_64bitlimbs_bench.wasm --run-all-exports
+	EXPORTS="-export=bench_montmul256_64bitlimbs"
+	time -v $(WABT_DIR)/wasm-interp bench_montmul256_64bitlimbs.wasm --run-all-exports
 
-bench_all: montmul256_32bitlimbs_bench montmul256_64bitlimbs_bench montmul768_32bitlimbs_bench montmul768_64bitlimbs_bench
+bench_montsquare256_32bitlimbs:
+	make project \
+	PROJECT=bench_montsquare256_32bitlimbs \
+	SOURCE=bench.c \
+	EXPORTS="-export=bench_montsquare256_32bitlimbs"
+	time -v $(WABT_DIR)/wasm-interp bench_montsquare256_32bitlimbs.wasm --run-all-exports
+
+bench_montsquare256_64bitlimbs:
+	make project \
+	PROJECT=bench_montsquare256_64bitlimbs \
+	SOURCE=bench.c \
+	EXPORTS="-export=bench_montsquare256_64bitlimbs"
+	time -v $(WABT_DIR)/wasm-interp bench_montsquare256_64bitlimbs.wasm --run-all-exports
+
+bench_montmul768_32bitlimbs:
+	make project \
+	PROJECT=bench_montmul768_32bitlimbs \
+	SOURCE=bench.c \
+	EXPORTS="-export=bench_montmul768_32bitlimbs"
+	time -v $(WABT_DIR)/wasm-interp bench_montmul768_32bitlimbs.wasm --run-all-exports	# TODO: there is an error when executing this one
+
+bench_montmul768_64bitlimbs:
+	make project \
+	PROJECT=bench_montmul768_64bitlimbs \
+	SOURCE=bench.c \
+	EXPORTS="-export=bench_montmul768_64bitlimbs"
+	time -v $(WABT_DIR)/wasm-interp bench_montmul768_64bitlimbs.wasm --run-all-exports
+
+bench_all: bench_mul256_32bitlimbs bench_mul256_64bitlimbs bench_montmul256_32bitlimbs bench_montmul256_64bitlimbs bench_montsquare256_32bitlimbs bench_montsquare256_64bitlimbs bench_montmul768_32bitlimbs bench_montmul768_64bitlimbs
+
 
 
 
