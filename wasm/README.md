@@ -8,7 +8,7 @@ CMake is required if you are compiling dependencies. This is usually available i
 
 ### LLVM8+
 
-We use `LLVM8` or newer to compile to wasm. This should be in syste repositories. You may also be able to find binaries online. As a last resort, you can compile it following the standard instructions below.
+We use `LLVM8` or newer to compile to wasm. This should be in system repositories. You may also be able to find executables online. As a last resort, you can compile it as follows.
 
 ```
 git clone https://github.com/llvm/llvm-project.git	# big download
@@ -20,7 +20,7 @@ cd ../..
 
 ### Wabt
 
-We use wabt to transform between wasm binary and text format. Specifically `wasm2wat` and `wat2wasm`. And, optionally, we use `wasm-interp` to execute the wasm. You can download a release of wabt binaries, or compile it as follows.
+We use wabt's `wasm2wat` and `wat2wasm` to transform between wasm binary and text format. And, optionally, we use wabt's `wasm-interp` to execute the wasm. You can download a release of these wabt executables, or compile them as follows.
 
 ```
 git clone https://github.com/webassembly/wabt.git       #18MB
@@ -33,7 +33,7 @@ cd ../..
 
 ### Binaryen
 
-We use binaryen tool `wasm-opt` to optimize Wasm binaries. You can download a release of the binaries, or compile it as follows.
+We use binaryen tool `wasm-opt` to optimize compiled wasm executables. You can download a release of the binaryen executables, or compile them as follows.
 ```
 git clone https://github.com/webassembly/binaryen.git       #141 MB
 cd binaryen
@@ -45,7 +45,7 @@ cd ../..
 
 ### __multi3()
 
-Because Wasm doesn't support multiplication `u64xu64->u128`, so if you need it, we use the precompiled version of builtin `__multi3()`. See the makefile for the exact command where `wasm-ld` links against this file.
+Wasm doesn't support multiplication `u64xu64->u128`, so if you need it, we use the precompiled version of builtin `__multi3()`. See the makefile for the exact command where `wasm-ld` links against this llvm builtin.
 ```
 wget https://github.com/CraneStation/wasi-sdk/releases/download/wasi-sdk-5/libclang_rt.builtins-wasm32-wasi-5.0.tar.gz
 tar -xvzf libclang_rt.builtins-wasm32-wasi-5.0.tar.gz
@@ -54,9 +54,9 @@ tar -xvzf libclang_rt.builtins-wasm32-wasi-5.0.tar.gz
 
 # Compile
 
-llvm, wabt, and binaryen binaries are called in the Makefile. Either (i) these binaries are already visible, (ii) you update your `PATH` system variable with maths to these binaries, (iii) you manually set the paths to the binaries at the top of the Makefile, or (v) you set give these path variables as arguments to make.
+llvm, wabt, and binaryen executables are called by the Makefile. Either (i) these executables are already in your shell's search path, (ii) you update your `PATH` system variable with paths to these executables, (iii) you manually set the paths to the executables at the top of the Makefile, or (v) you pass these path variables as arguments to make.
 
-Then you can compile specific functions.
+Then you can compile specific bigint functions.
 
 ```
 make mul256_32bitlimbs
@@ -64,12 +64,12 @@ make montmul256_64bitlimbs
 make montsquare256_32bitlimbs
 ```
 
-Edit the makefile to create your own recipes.
+Edit the makefile to create your own recipes with other bigint functions.
 
 
 # Bench
 
-Edit the makefile and `bench.c` to creating your own benchmarks. Then compile and run the benchmark in wabt as follows.
+Edit the makefile and `bench.c` to create your own benchmarks. Then compile and run the benchmark in wabt as follows.
 
 ```
 make montmul256_32bitlimbs_bench
@@ -81,5 +81,5 @@ To benchmark in a browser, first create a server from this directory.
 python3 -m http.server
 ```
 
-Then in your browser, visit: http://0.0.0.0:8000/ or whatever address python outputs, and adjust the filename and funcname, and click the run button, which should print a runtime.
+Then in your browser, visit http://0.0.0.0:8000/ or whatever address python outputs, and adjust the filename and funcname, and click the run button, which should print a runtime.
 
