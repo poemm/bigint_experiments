@@ -1,8 +1,6 @@
 
 #if !WASM
 #include <stdint.h>
-#include <stdio.h>
-#include <string.h>
 #endif
 
 #define uint128_t __uint128_t
@@ -256,8 +254,8 @@ void FUNCNAME(montmul)(UINT* restrict x, UINT* restrict y, UINT* restrict m, UIN
 // algorithm 14.36, Handbook of Applied Cryptography, http://cacr.uwaterloo.ca/hac/about/chap14.pdf
 // this is a copy/paste of the one above, but with signature x,y,out, and hard-coded m and inv.
 void FUNCNAME(montmul_3args_)(UINT* restrict x, UINT* restrict y, UINT* restrict out){
-  UINT* m = (UINT*)4444444;
-  UINT* inv = (UINT*)6666666;
+  UINT* m = (UINT*)4444444;    // hard-code address to m here
+  UINT* inv = (UINT*)6666666;  // hard-code address to inv here
   UINT A[NUM_LIMBS*2] = {0};
   //#pragma unroll	// this unroll increases binary size by a lot
   for (int i=0; i<NUM_LIMBS; i++){

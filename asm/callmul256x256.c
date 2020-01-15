@@ -14,6 +14,8 @@ gcc -std=c99 callmul256x256_512.c mul256x256_512.s -fno-pie -no-pie
 #include <inttypes.h>
 #include <string.h>
 
+#include <x86intrin.h> // for __rdtsc();
+
 #if TO512
   #define mul256x256 mul256x256_512
 #else
@@ -23,7 +25,7 @@ gcc -std=c99 callmul256x256_512.c mul256x256_512.s -fno-pie -no-pie
 void mul256x256(uint32_t* out, uint32_t* a, uint32_t* b);
 
 void bench(uint32_t* out, uint32_t* a, uint32_t* b){
-  for (int i=0; i<10000;i++){
+  for (int i=0; i<100000;i++){
     mul256x256(out,a,b); mul256x256(out,a,b); mul256x256(out,a,b); mul256x256(out,a,b);
     mul256x256(out,a,b); mul256x256(out,a,b); mul256x256(out,a,b); mul256x256(out,a,b);
     mul256x256(out,a,b); mul256x256(out,a,b); mul256x256(out,a,b); mul256x256(out,a,b);
@@ -103,7 +105,10 @@ int main(int argc, char** argv) {
 #if BENCHMARK
   bench(out,a,b);
 #else // no bench, just evaluate
+  uint64_t cycles1 = __rdtsc();
   mul256x256(out,a,b);
+  uint64_t cycles2 = __rdtsc();
+  printf("num cycles %u\n", (uint32_t)(cycles2-cycles1));
 #endif
 
   int error = 0;

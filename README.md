@@ -1,4 +1,4 @@
-`bigint.h` (translated from `bigint.py`) is a library for the following bigint arithmetic over integers:
+`bigint.h` (and `bigint.py`) is a library for the following bigint arithmetic over integers:
  - addition without an extra carry limb
  - subtraction for lhs>=rhs
  - comparisons < and <=
@@ -8,7 +8,7 @@
  - montogmery multiplication
 
 ## Goals of this library
- - Support arbitrarily many limbs and multiple limb sizes. For example, newer architectures support multiplication like u64xu64->u128, but we also support u32xu32->u64 for compatibility with things like Wasm 1.0.
+ - Support arbitrarily many limbs and multiple limb sizes. For example, newer architectures support multiplication like u64xu64->u128, but we also support u32xu32->u64 for compatibility with things like Wasm32.
  - The Python code is C-like and used for prototyping and testing before porting to C.
  - Spec-based. The code cites where the algorithms were found.
  - A simple baseline for optimizations -- no bit-twiddling or unclear tricks.
@@ -27,6 +27,11 @@ montmul256_32bitlimbs(x,y,m,inv,out);
 // compile:
 gcc myprogram.c -o myprogram -w -I/path/to/header/file's/directory
 ./myprogram
+```
+
+To apply preprocessor macros and get code for a specific number of bits and word sizes:
+```
+gcc -E -DBIGINT_BITS=256 -DLIMB_BITS=64 -DLIMB_BITS_OVERFLOW=128 bigint.h -o bigint_.h
 ```
 
 ## Some notes
