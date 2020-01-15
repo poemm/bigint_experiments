@@ -1,7 +1,7 @@
 
 
 #include "utils.h"
-#include "../bignum.h"
+#include "../bigint.h"
 
 
 

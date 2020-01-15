@@ -13,7 +13,7 @@ typedef unsigned __int128 uint128_t;
 #define LIMB_BITS_OVERFLOW=uint64_t
 */
 
-#include "bignum.h"
+#include "bigint.h"
 
 #define NUM_LIMBS (BIGINT_BITS/LIMB_BITS)
 

@@ -1,4 +1,4 @@
-`bignum.h` (translated from `bignum.py`) is a library for the following bignum arithmetic over integers:
+`bigint.h` (translated from `bigint.py`) is a library for the following bigint arithmetic over integers:
  - addition without an extra carry limb
  - subtraction for lhs>=rhs
  - comparisons < and <=
@@ -15,13 +15,13 @@
 
 ## How to use
 
-See comments in `bignum.h` and `bignum.py`. But here is a quick demo:
+See comments in `bigint.h` and `bigint.py`. But here is a quick demo:
 ```
 // in myprogram.c
 #define BIGINT_BITS 256
 #define LIMB_BITS 32
 #define LIMB_BITS_OVERFLOW 64
-#include "bignum.h"
+#include "bigint.h"
 montmul256_32bitlimbs(x,y,m,inv,out);
 
 // compile:

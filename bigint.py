@@ -1,6 +1,6 @@
 """
 
-This python code is for prototyping and testing, it is much slower than bignum.h.
+This python code is for prototyping and testing, it is much slower than bigint.h.
 
 """
 
@@ -289,7 +289,7 @@ def test_montmul():
 
 if __name__ == "__main__":
   # this just tests montgomery multiplication for now
-  # use like this: python3 bignum.py montmul 0x5bf1157a72e0c409a169d2f0d036bcb9f9090b25c25b27d090c2d9e9bc21f4da 0xd9dc1c4c37ce4b73d08901b7b771bcf905f78da0df88858f115bcc6dc24de3e4 0x30644e72e131a029b85045b68181585d97816a916871ca8d3c208c16d87cfd47 0x2ddccb3fa965bcb892d206fbf462e21f9ede7d651eca6ac987d20782e4866389 0x275614dc5a747e3e5e9e4b286d5e4ba1c41b8afd1cb65e567b13f64a160a48ed
+  # use like this: python3 bigint.py montmul 0x5bf1157a72e0c409a169d2f0d036bcb9f9090b25c25b27d090c2d9e9bc21f4da 0xd9dc1c4c37ce4b73d08901b7b771bcf905f78da0df88858f115bcc6dc24de3e4 0x30644e72e131a029b85045b68181585d97816a916871ca8d3c208c16d87cfd47 0x2ddccb3fa965bcb892d206fbf462e21f9ede7d651eca6ac987d20782e4866389 0x275614dc5a747e3e5e9e4b286d5e4ba1c41b8afd1cb65e567b13f64a160a48ed
   test_mul()
   import sys
   # consts and preallocated output

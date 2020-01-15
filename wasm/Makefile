@@ -241,13 +241,13 @@ montmul_bench_all:
 	make montmul_bench_speed_optimized EXPORTS=-export=_main768_64bitlimbs
 	mv montmul_bench_optimized.wasm montmul_bench_speed_optimized768_64bitlimbs.wasm
 	# all sizes in one file
-	make montmul_bench_unoptimized EXPORTS="-export=montmul256_32bitlimbs -export=montmul256_64bitlimbs -export=montmul768_32bitlimbs -export=montmul768_64bitlimbs"
+	make montmul_bench_unoptimized EXPORTS="-export=_main256_32bitlimbs -export=_main256_64bitlimbs -export=_main768_32bitlimbs -export=_main768_64bitlimbs"
 	mv montmul_bench_optimized.wasm montmul_bench_unoptimized.wasm
 	mv montmul_bench_optimized.wat montmul_bench_unoptimized.wat
-	make montmul_bench_size_optimized EXPORTS="-export=montmul256_32bitlimbs -export=montmul256_64bitlimbs -export=montmul768_32bitlimbs -export=montmul768_64bitlimbs"
+	make montmul_bench_size_optimized EXPORTS="-export=_main256_32bitlimbs -export=_main256_64bitlimbs -export=_main768_32bitlimbs -export=_main768_64bitlimbs"
 	mv montmul_bench_optimized.wasm montmul_bench_size_optimized.wasm
 	mv montmul_bench_optimized.wat montmul_bench_size_optimized.wat
-	make montmul_bench_speed_optimized EXPORTS="-export=montmul256_32bitlimbs -export=montmul256_64bitlimbs -export=montmul768_32bitlimbs -export=montmul768_64bitlimbs"
+	make montmul_bench_speed_optimized EXPORTS="-export=_main256_32bitlimbs -export=_main256_64bitlimbs -export=_main768_32bitlimbs -export=_main768_64bitlimbs"
 	mv montmul_bench_optimized.wasm montmul_bench_speed_optimized.wasm
 	mv montmul_bench_optimized.wat montmul_bench_speed_optimized.wat
 
@@ -312,15 +312,15 @@ montsquare_all: montsquare_speed_optimized montsquare_size_optimized montsquare_
 
 montmul_3args:
 	# build
-	$(LLVM)clang -cc1 $(OPTIMIZATION_CLANG) -emit-llvm -triple=wasm32-unknown-unknown-wasm bignum.c -o bignum.ll
-	$(LLVM)opt $(OPTIMIZATION_OPT) bignum.ll -o bignum.ll
-	$(LLVM)llc $(OPTIMIZATION_LLC) -filetype=obj bignum.ll -o bignum.o
+	$(LLVM)clang -cc1 $(OPTIMIZATION_CLANG) -emit-llvm -triple=wasm32-unknown-unknown-wasm bigint.c -o bigint.ll
+	$(LLVM)opt $(OPTIMIZATION_OPT) bigint.ll -o bigint.ll
+	$(LLVM)llc $(OPTIMIZATION_LLC) -filetype=obj bigint.ll -o bigint.o
 	# get builtin __multi3() to link against
 ifeq (, $(shell if [ -e lib/wasi/libclang_rt.builtins-wasm32.a ] ; then echo blah ; fi;))
 	wget https://github.com/CraneStation/wasi-sdk/releases/download/wasi-sdk-5/libclang_rt.builtins-wasm32-wasi-5.0.tar.gz
 	tar -xvzf libclang_rt.builtins-wasm32-wasi-5.0.tar.gz
 endif
-	$(LLVM)wasm-ld $(OPTIMIZATION_WASM_LD) bignum.o -o montmul_3args.wasm --no-entry lib/wasi/libclang_rt.builtins-wasm32.a $(EXPORTS)
+	$(LLVM)wasm-ld $(OPTIMIZATION_WASM_LD) bigint.o -o montmul_3args.wasm --no-entry lib/wasi/libclang_rt.builtins-wasm32.a $(EXPORTS)
 	# done compiling, save text version
 	$(WABT_DIR)wasm2wat montmul_3args.wasm > montmul_3args.wat
 	#$(WABT_DIR)wat2wasm montmul.wat > montmul.wasm
@@ -330,7 +330,7 @@ endif
 	$(WABT_DIR)wasm2wat montmul_3args_optimized.wasm > montmul_3args_optimized.wat
 	# save everything to wasm directory
 	# remove intermediate files
-	rm -f bignum.ll bignum.o
+	rm -f bigint.ll bigint.o
 
 montmul_3args_speed_optimized:
 	make montmul_3args \

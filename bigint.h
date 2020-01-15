@@ -17,7 +17,7 @@ To use this library, define a limb size and include it:
   #define BIGINT_BITS 256
   #define LIMB_BITS 64
   #define LIMB_BITS_OVERFLOW 128
-  #include "bignum.h"
+  #include "bigint.h"
   #undef BIGINT_BITS
   #undef LIMB_BITS
   #undef LIMB_BITS_OVERFLOW
@@ -25,7 +25,7 @@ To use this library, define a limb size and include it:
   #define BIGINT_BITS 512
   #define LIMB_BITS 32
   #define LIMB_BITS_OVERFLOW 64
-  #include "bignum.h"
+  #include "bigint.h"
   #undef BIGINT_BITS
   #undef LIMB_BITS
   #undef LIMB_BITS_OVERFLOW

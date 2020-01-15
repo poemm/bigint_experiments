@@ -3,7 +3,7 @@ import binascii
 
 import sys
 sys.path.append('..')
-import bignum
+import bigint
 
 
 def generate_add_tests(filename,execname,numtests,max_bits):  
@@ -73,7 +73,7 @@ def generate_montmul_tests(filename,execname,numtests,max_bits):
     while(mod%2==0):
       mod=random.randint(0,2**max_bits-1)
     #print("mod",mod)
-    inv = bignum.compute_minus_m_inv_mod_base(mod,base)
+    inv = bigint.compute_minus_m_inv_mod_base(mod,base)
     #print("inv",inv)
     # generate random a and b
     a=mod
@@ -85,7 +85,7 @@ def generate_montmul_tests(filename,execname,numtests,max_bits):
     #print("a",a,"b",b)
     # get expected output
     expected = [0]
-    bignum.montgomery_reduction([(a*b)%(2**max_bits),(a*b)//(2**max_bits)],[mod],[inv],expected,2**max_bits,1)  # using montreduce, which must be tested separately
+    bigint.montgomery_reduction([(a*b)%(2**max_bits),(a*b)//(2**max_bits)],[mod],[inv],expected,2**max_bits,1)  # using montreduce, which must be tested separately
     # print command
     command = execname+" montmul "+hex(a)+" "+hex(b)+" "+hex(mod)+" "+hex(inv)+" "+hex(expected[0])+"\n"
     f.write(command)
@@ -122,15 +122,15 @@ def generate_montmul768_tests(filename,numtests,max_bits):
     b=random.randint(0,2**max_bits-1)
     if a>=mod or b>=mod: continue
     out = caseys_mulreduce_768(a,b,mod,inv)
-    command ="./bignum_test_gcc_24 montmul "+hex(a)+" "+hex(b)+" "+hex(mod)+" "+hex(inv)+" "+hex(out)+"\n"
+    command ="./bigint_test_gcc_24 montmul "+hex(a)+" "+hex(b)+" "+hex(mod)+" "+hex(inv)+" "+hex(out)+"\n"
     f.write(command)
-    #command ="./bignum_test_clang_24 montmul "+hex(a)+" "+hex(b)+" "+hex(mod)+" "+hex(inv)+" "+hex(out)+"\n"
+    #command ="./bigint_test_clang_24 montmul "+hex(a)+" "+hex(b)+" "+hex(mod)+" "+hex(inv)+" "+hex(out)+"\n"
     #f.write(command)
   f.close
 
 def generate_montmul_tests_hack(filename,numtests,max_bits):  
   f = open(filename, 'a')
-  import bignum
+  import bigint
   num_limbs=2 #this is arbitrary and only for generation
   base=2**(max_bits//num_limbs)
   for i in range(numtests):
@@ -145,17 +145,17 @@ def generate_montmul_tests_hack(filename,numtests,max_bits):
       a=random.randint(0,2**max_bits-1)
       b=random.randint(0,2**max_bits-1)
     command ="./a.out montmul "+hex(a)+" "+hex(b)+" "+hex(mod)+" "+hex(inv)
-    a=bignum.int_to_digits(a,base)
-    b=bignum.int_to_digits(b,base)
-    mod=bignum.int_to_digits(mod,base)
-    inv=bignum.int_to_digits(inv,base)
+    a=bigint.int_to_digits(a,base)
+    b=bigint.int_to_digits(b,base)
+    mod=bigint.int_to_digits(mod,base)
+    inv=bigint.int_to_digits(inv,base)
     if len(a)!=num_limbs: a=a+[0]*(num_limbs-len(a))
     if len(b)!=num_limbs: a=a+[0]*(num_limbs-len(b))
     if len(mod)!=num_limbs: a=a+[0]*(num_limbs-len(mod))
     if len(inv)!=num_limbs: a=a+[0]*(num_limbs-len(inv))
     out=[0]*num_limbs
-    bignum.montgomery_multiplication(a,b,mod,inv,out,base,num_limbs)
-    command+=" "+hex(bignum.digits_to_int(out,base))+"\n"
+    bigint.montgomery_multiplication(a,b,mod,inv,out,base,num_limbs)
+    command+=" "+hex(bigint.digits_to_int(out,base))+"\n"
     f.write(command)
   f.close
 """

@@ -157,45 +157,45 @@
     local.get 1
     i64.load32_u offset=4
     local.set 46
-    i32.const 99999
+    i32.const 6666666
     i32.load
     local.set 33
-    i32.const 88916
+    i32.const 4444472
     i32.load
     local.tee 17
     i64.extend_i32_u
     local.set 47
-    i32.const 88912
+    i32.const 4444468
     i32.load
     local.tee 18
     i64.extend_i32_u
     local.set 48
-    i32.const 88908
+    i32.const 4444464
     i32.load
     local.tee 19
     i64.extend_i32_u
     local.set 49
-    i32.const 88904
+    i32.const 4444460
     i32.load
     local.tee 20
     i64.extend_i32_u
     local.set 50
-    i32.const 88900
+    i32.const 4444456
     i32.load
     local.tee 21
     i64.extend_i32_u
     local.set 51
-    i32.const 88896
+    i32.const 4444452
     i32.load
     local.tee 22
     i64.extend_i32_u
     local.set 52
-    i32.const 88892
+    i32.const 4444448
     i32.load
     local.tee 23
     i64.extend_i32_u
     local.set 53
-    i32.const 88888
+    i32.const 4444444
     i32.load
     local.tee 24
     i64.extend_i32_u
@@ -1026,7 +1026,7 @@
     local.get 0
     i32.load
     local.tee 2
-    i32.const 88888
+    i32.const 4444444
     i32.load
     local.tee 3
     i32.sub
@@ -1039,7 +1039,7 @@
     local.get 3
     i32.lt_u
     i32.sub
-    i32.const 88892
+    i32.const 4444448
     i32.load
     i32.sub
     local.tee 2
@@ -1052,7 +1052,7 @@
     local.get 4
     i32.gt_u
     i32.sub
-    i32.const 88896
+    i32.const 4444452
     i32.load
     i32.sub
     local.tee 2
@@ -1065,7 +1065,7 @@
     local.get 3
     i32.gt_u
     i32.sub
-    i32.const 88900
+    i32.const 4444456
     i32.load
     i32.sub
     local.tee 2
@@ -1078,7 +1078,7 @@
     local.get 4
     i32.gt_u
     i32.sub
-    i32.const 88904
+    i32.const 4444460
     i32.load
     i32.sub
     local.tee 2
@@ -1091,7 +1091,7 @@
     local.get 3
     i32.gt_u
     i32.sub
-    i32.const 88908
+    i32.const 4444464
     i32.load
     i32.sub
     local.tee 2
@@ -1104,7 +1104,7 @@
     local.get 4
     i32.gt_u
     i32.sub
-    i32.const 88912
+    i32.const 4444468
     i32.load
     i32.sub
     local.tee 2
@@ -1117,7 +1117,7 @@
     local.get 3
     i32.gt_u
     i32.sub
-    i32.const 88916
+    i32.const 4444472
     i32.load
     i32.sub
     local.tee 2
@@ -1130,7 +1130,7 @@
     local.get 4
     i32.gt_u
     i32.sub
-    i32.const 88920
+    i32.const 4444476
     i32.load
     i32.sub
     local.tee 2
@@ -1143,7 +1143,7 @@
     local.get 3
     i32.gt_u
     i32.sub
-    i32.const 88924
+    i32.const 4444480
     i32.load
     i32.sub
     local.tee 2
@@ -1156,7 +1156,7 @@
     local.get 4
     i32.gt_u
     i32.sub
-    i32.const 88928
+    i32.const 4444484
     i32.load
     i32.sub
     local.tee 2
@@ -1169,7 +1169,7 @@
     local.get 3
     i32.gt_u
     i32.sub
-    i32.const 88932
+    i32.const 4444488
     i32.load
     i32.sub
     local.tee 2
@@ -1182,7 +1182,7 @@
     local.get 4
     i32.gt_u
     i32.sub
-    i32.const 88936
+    i32.const 4444492
     i32.load
     i32.sub
     local.tee 2
@@ -1195,7 +1195,7 @@
     local.get 3
     i32.gt_u
     i32.sub
-    i32.const 88940
+    i32.const 4444496
     i32.load
     i32.sub
     local.tee 2
@@ -1208,7 +1208,7 @@
     local.get 4
     i32.gt_u
     i32.sub
-    i32.const 88944
+    i32.const 4444500
     i32.load
     i32.sub
     local.tee 2
@@ -1221,7 +1221,7 @@
     local.get 3
     i32.gt_u
     i32.sub
-    i32.const 88948
+    i32.const 4444504
     i32.load
     i32.sub
     local.tee 2
@@ -1234,7 +1234,7 @@
     local.get 4
     i32.gt_u
     i32.sub
-    i32.const 88952
+    i32.const 4444508
     i32.load
     i32.sub
     local.tee 2
@@ -1247,7 +1247,7 @@
     local.get 3
     i32.gt_u
     i32.sub
-    i32.const 88956
+    i32.const 4444512
     i32.load
     i32.sub
     local.tee 2
@@ -1260,7 +1260,7 @@
     local.get 4
     i32.gt_u
     i32.sub
-    i32.const 88960
+    i32.const 4444516
     i32.load
     i32.sub
     local.tee 2
@@ -1273,7 +1273,7 @@
     local.get 3
     i32.gt_u
     i32.sub
-    i32.const 88964
+    i32.const 4444520
     i32.load
     i32.sub
     local.tee 2
@@ -1286,7 +1286,7 @@
     local.get 4
     i32.gt_u
     i32.sub
-    i32.const 88968
+    i32.const 4444524
     i32.load
     i32.sub
     local.tee 2
@@ -1299,7 +1299,7 @@
     local.get 3
     i32.gt_u
     i32.sub
-    i32.const 88972
+    i32.const 4444528
     i32.load
     i32.sub
     local.tee 2
@@ -1312,7 +1312,7 @@
     local.get 4
     i32.gt_u
     i32.sub
-    i32.const 88976
+    i32.const 4444532
     i32.load
     i32.sub
     local.tee 2
@@ -1320,7 +1320,7 @@
     local.get 1
     local.get 0
     i32.load offset=92
-    i32.const 88980
+    i32.const 4444536
     i32.load
     i32.sub
     local.get 2
@@ -1331,7 +1331,7 @@
   (func $less_than_or_equal768_32bitlimbs (type 2) (param i32) (result i32)
     (local i32 i32 i32)
     block  ;; label = @1
-      i32.const 88980
+      i32.const 4444536
       i32.load
       local.tee 1
       local.get 0
@@ -1344,7 +1344,7 @@
         local.get 2
         i32.lt_u
         br_if 0 (;@2;)
-        i32.const 88976
+        i32.const 4444532
         i32.load
         local.tee 1
         local.get 0
@@ -1356,7 +1356,7 @@
         local.get 2
         i32.lt_u
         br_if 0 (;@2;)
-        i32.const 88972
+        i32.const 4444528
         i32.load
         local.tee 1
         local.get 0
@@ -1368,7 +1368,7 @@
         local.get 2
         i32.lt_u
         br_if 0 (;@2;)
-        i32.const 88968
+        i32.const 4444524
         i32.load
         local.tee 1
         local.get 0
@@ -1380,7 +1380,7 @@
         local.get 2
         i32.lt_u
         br_if 0 (;@2;)
-        i32.const 88964
+        i32.const 4444520
         i32.load
         local.tee 1
         local.get 0
@@ -1392,7 +1392,7 @@
         local.get 2
         i32.lt_u
         br_if 0 (;@2;)
-        i32.const 88960
+        i32.const 4444516
         i32.load
         local.tee 1
         local.get 0
@@ -1404,7 +1404,7 @@
         local.get 2
         i32.lt_u
         br_if 0 (;@2;)
-        i32.const 88956
+        i32.const 4444512
         i32.load
         local.tee 1
         local.get 0
@@ -1416,7 +1416,7 @@
         local.get 2
         i32.lt_u
         br_if 0 (;@2;)
-        i32.const 88952
+        i32.const 4444508
         i32.load
         local.tee 1
         local.get 0
@@ -1428,7 +1428,7 @@
         local.get 2
         i32.lt_u
         br_if 0 (;@2;)
-        i32.const 88948
+        i32.const 4444504
         i32.load
         local.tee 1
         local.get 0
@@ -1440,7 +1440,7 @@
         local.get 2
         i32.lt_u
         br_if 0 (;@2;)
-        i32.const 88944
+        i32.const 4444500
         i32.load
         local.tee 1
         local.get 0
@@ -1452,7 +1452,7 @@
         local.get 2
         i32.lt_u
         br_if 0 (;@2;)
-        i32.const 88940
+        i32.const 4444496
         i32.load
         local.tee 1
         local.get 0
@@ -1464,7 +1464,7 @@
         local.get 2
         i32.lt_u
         br_if 0 (;@2;)
-        i32.const 88936
+        i32.const 4444492
         i32.load
         local.tee 1
         local.get 0
@@ -1476,7 +1476,7 @@
         local.get 2
         i32.lt_u
         br_if 0 (;@2;)
-        i32.const 88932
+        i32.const 4444488
         i32.load
         local.tee 1
         local.get 0
@@ -1488,7 +1488,7 @@
         local.get 2
         i32.lt_u
         br_if 0 (;@2;)
-        i32.const 88928
+        i32.const 4444484
         i32.load
         local.tee 1
         local.get 0
@@ -1500,7 +1500,7 @@
         local.get 2
         i32.lt_u
         br_if 0 (;@2;)
-        i32.const 88924
+        i32.const 4444480
         i32.load
         local.tee 1
         local.get 0
@@ -1512,7 +1512,7 @@
         local.get 2
         i32.lt_u
         br_if 0 (;@2;)
-        i32.const 88920
+        i32.const 4444476
         i32.load
         local.tee 1
         local.get 0
@@ -1524,7 +1524,7 @@
         local.get 2
         i32.lt_u
         br_if 0 (;@2;)
-        i32.const 88916
+        i32.const 4444472
         i32.load
         local.tee 1
         local.get 0
@@ -1536,7 +1536,7 @@
         local.get 2
         i32.lt_u
         br_if 0 (;@2;)
-        i32.const 88912
+        i32.const 4444468
         i32.load
         local.tee 1
         local.get 0
@@ -1548,7 +1548,7 @@
         local.get 2
         i32.lt_u
         br_if 0 (;@2;)
-        i32.const 88908
+        i32.const 4444464
         i32.load
         local.tee 1
         local.get 0
@@ -1560,7 +1560,7 @@
         local.get 2
         i32.lt_u
         br_if 0 (;@2;)
-        i32.const 88904
+        i32.const 4444460
         i32.load
         local.tee 1
         local.get 0
@@ -1572,7 +1572,7 @@
         local.get 2
         i32.lt_u
         br_if 0 (;@2;)
-        i32.const 88900
+        i32.const 4444456
         i32.load
         local.tee 1
         local.get 0
@@ -1584,7 +1584,7 @@
         local.get 2
         i32.lt_u
         br_if 0 (;@2;)
-        i32.const 88896
+        i32.const 4444452
         i32.load
         local.tee 1
         local.get 0
@@ -1596,7 +1596,7 @@
         local.get 2
         i32.lt_u
         br_if 0 (;@2;)
-        i32.const 88892
+        i32.const 4444448
         i32.load
         local.tee 1
         local.get 0
@@ -1610,7 +1610,7 @@
         local.get 2
         i32.lt_u
         br_if 1 (;@1;)
-        i32.const 88888
+        i32.const 4444444
         i32.load
         local.get 0
         i32.load
@@ -1726,148 +1726,148 @@
     i32.const 8
     i32.or
     local.set 32
-    i32.const 88980
+    i32.const 4444536
     i64.load32_u
     local.set 64
     local.get 1
     i64.load32_u offset=92
     local.set 65
-    i32.const 88976
+    i32.const 4444532
     i64.load32_u
     local.set 66
     local.get 1
     i64.load32_u offset=88
     local.set 67
-    i32.const 88972
+    i32.const 4444528
     i64.load32_u
     local.set 68
     local.get 1
     i64.load32_u offset=84
     local.set 69
-    i32.const 88968
+    i32.const 4444524
     i64.load32_u
     local.set 70
     local.get 1
     i64.load32_u offset=80
     local.set 71
-    i32.const 88964
+    i32.const 4444520
     i64.load32_u
     local.set 72
     local.get 1
     i64.load32_u offset=76
     local.set 73
-    i32.const 88960
+    i32.const 4444516
     i64.load32_u
     local.set 74
     local.get 1
     i64.load32_u offset=72
     local.set 75
-    i32.const 88956
+    i32.const 4444512
     i64.load32_u
     local.set 76
     local.get 1
     i64.load32_u offset=68
     local.set 77
-    i32.const 88952
+    i32.const 4444508
     i64.load32_u
     local.set 78
     local.get 1
     i64.load32_u offset=64
     local.set 79
-    i32.const 88948
+    i32.const 4444504
     i64.load32_u
     local.set 80
     local.get 1
     i64.load32_u offset=60
     local.set 81
-    i32.const 88944
+    i32.const 4444500
     i64.load32_u
     local.set 82
     local.get 1
     i64.load32_u offset=56
     local.set 83
-    i32.const 88940
+    i32.const 4444496
     i64.load32_u
     local.set 84
     local.get 1
     i64.load32_u offset=52
     local.set 85
-    i32.const 88936
+    i32.const 4444492
     i64.load32_u
     local.set 86
     local.get 1
     i64.load32_u offset=48
     local.set 87
-    i32.const 88932
+    i32.const 4444488
     i64.load32_u
     local.set 88
     local.get 1
     i64.load32_u offset=44
     local.set 89
-    i32.const 88928
+    i32.const 4444484
     i64.load32_u
     local.set 90
     local.get 1
     i64.load32_u offset=40
     local.set 91
-    i32.const 88924
+    i32.const 4444480
     i64.load32_u
     local.set 92
     local.get 1
     i64.load32_u offset=36
     local.set 93
-    i32.const 88920
+    i32.const 4444476
     i64.load32_u
     local.set 94
     local.get 1
     i64.load32_u offset=32
     local.set 95
-    i32.const 88916
+    i32.const 4444472
     i64.load32_u
     local.set 96
     local.get 1
     i64.load32_u offset=28
     local.set 97
-    i32.const 88912
+    i32.const 4444468
     i64.load32_u
     local.set 98
     local.get 1
     i64.load32_u offset=24
     local.set 99
-    i32.const 88908
+    i32.const 4444464
     i64.load32_u
     local.set 100
     local.get 1
     i64.load32_u offset=20
     local.set 101
-    i32.const 88904
+    i32.const 4444460
     i64.load32_u
     local.set 102
     local.get 1
     i64.load32_u offset=16
     local.set 103
-    i32.const 88900
+    i32.const 4444456
     i64.load32_u
     local.set 104
     local.get 1
     i64.load32_u offset=12
     local.set 105
-    i32.const 88896
+    i32.const 4444452
     i64.load32_u
     local.set 106
     local.get 1
     i64.load32_u offset=8
     local.set 107
-    i32.const 88892
+    i32.const 4444448
     i64.load32_u
     local.set 108
     local.get 1
     i64.load32_u offset=4
     local.set 109
-    i32.const 88888
+    i32.const 4444444
     i64.load32_u
     local.set 110
-    i32.const 99999
+    i32.const 6666666
     i32.load
     local.set 57
     local.get 1
@@ -3711,28 +3711,28 @@
     local.get 3
     i64.const 0
     i64.store offset=128
-    i32.const 88912
+    i32.const 4444468
     i64.load
     local.set 24
     local.get 1
     i64.load offset=24
     local.set 27
-    i32.const 88904
+    i32.const 4444460
     i64.load
     local.set 21
     local.get 1
     i64.load offset=16
     local.set 28
-    i32.const 88896
+    i32.const 4444452
     i64.load
     local.set 22
     local.get 1
     i64.load offset=8
     local.set 29
-    i32.const 88888
+    i32.const 4444444
     i64.load
     local.set 25
-    i32.const 99999
+    i32.const 6666666
     i64.load
     local.set 30
     local.get 1
@@ -4337,7 +4337,7 @@
   (func $less_than_or_equal768_64bitlimbs (type 4) (param i32) (result i64)
     (local i64 i64 i64)
     block  ;; label = @1
-      i32.const 88976
+      i32.const 4444532
       i64.load
       local.tee 1
       local.get 0
@@ -4350,7 +4350,7 @@
         local.get 2
         i64.lt_u
         br_if 0 (;@2;)
-        i32.const 88968
+        i32.const 4444524
         i64.load
         local.tee 1
         local.get 0
@@ -4362,7 +4362,7 @@
         local.get 2
         i64.lt_u
         br_if 0 (;@2;)
-        i32.const 88960
+        i32.const 4444516
         i64.load
         local.tee 1
         local.get 0
@@ -4374,7 +4374,7 @@
         local.get 2
         i64.lt_u
         br_if 0 (;@2;)
-        i32.const 88952
+        i32.const 4444508
         i64.load
         local.tee 1
         local.get 0
@@ -4386,7 +4386,7 @@
         local.get 2
         i64.lt_u
         br_if 0 (;@2;)
-        i32.const 88944
+        i32.const 4444500
         i64.load
         local.tee 1
         local.get 0
@@ -4398,7 +4398,7 @@
         local.get 2
         i64.lt_u
         br_if 0 (;@2;)
-        i32.const 88936
+        i32.const 4444492
         i64.load
         local.tee 1
         local.get 0
@@ -4410,7 +4410,7 @@
         local.get 2
         i64.lt_u
         br_if 0 (;@2;)
-        i32.const 88928
+        i32.const 4444484
         i64.load
         local.tee 1
         local.get 0
@@ -4422,7 +4422,7 @@
         local.get 2
         i64.lt_u
         br_if 0 (;@2;)
-        i32.const 88920
+        i32.const 4444476
         i64.load
         local.tee 1
         local.get 0
@@ -4434,7 +4434,7 @@
         local.get 2
         i64.lt_u
         br_if 0 (;@2;)
-        i32.const 88912
+        i32.const 4444468
         i64.load
         local.tee 1
         local.get 0
@@ -4446,7 +4446,7 @@
         local.get 2
         i64.lt_u
         br_if 0 (;@2;)
-        i32.const 88904
+        i32.const 4444460
         i64.load
         local.tee 1
         local.get 0
@@ -4458,7 +4458,7 @@
         local.get 2
         i64.lt_u
         br_if 0 (;@2;)
-        i32.const 88896
+        i32.const 4444452
         i64.load
         local.tee 1
         local.get 0
@@ -4472,7 +4472,7 @@
         local.get 2
         i64.lt_u
         br_if 1 (;@1;)
-        i32.const 88888
+        i32.const 4444444
         i64.load
         local.get 0
         i64.load
@@ -4544,76 +4544,76 @@
     i32.const 400
     i32.add
     local.set 18
-    i32.const 88976
+    i32.const 4444532
     i64.load
     local.set 39
     local.get 1
     i64.load offset=88
     local.set 51
-    i32.const 88968
+    i32.const 4444524
     i64.load
     local.set 40
     local.get 1
     i64.load offset=80
     local.set 52
-    i32.const 88960
+    i32.const 4444516
     i64.load
     local.set 41
     local.get 1
     i64.load offset=72
     local.set 53
-    i32.const 88952
+    i32.const 4444508
     i64.load
     local.set 42
     local.get 1
     i64.load offset=64
     local.set 54
-    i32.const 88944
+    i32.const 4444500
     i64.load
     local.set 43
     local.get 1
     i64.load offset=56
     local.set 55
-    i32.const 88936
+    i32.const 4444492
     i64.load
     local.set 44
     local.get 1
     i64.load offset=48
     local.set 56
-    i32.const 88928
+    i32.const 4444484
     i64.load
     local.set 45
     local.get 1
     i64.load offset=40
     local.set 57
-    i32.const 88920
+    i32.const 4444476
     i64.load
     local.set 46
     local.get 1
     i64.load offset=32
     local.set 58
-    i32.const 88912
+    i32.const 4444468
     i64.load
     local.set 47
     local.get 1
     i64.load offset=24
     local.set 59
-    i32.const 88904
+    i32.const 4444460
     i64.load
     local.set 48
     local.get 1
     i64.load offset=16
     local.set 60
-    i32.const 88896
+    i32.const 4444452
     i64.load
     local.set 49
     local.get 1
     i64.load offset=8
     local.set 61
-    i32.const 88888
+    i32.const 4444444
     i64.load
     local.set 38
-    i32.const 99999
+    i32.const 6666666
     i64.load
     local.set 62
     local.get 1
