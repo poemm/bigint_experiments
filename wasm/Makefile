@@ -18,19 +18,15 @@
 #
 
 
-# all of the following constants can be passed as command-line arguments to make
+# all of the following can be passed as command-line arguments to make
 
 # paths to tools
-#export LLVM_DIR := 
-#export WABT_DIR := 
-#export BINARYEN_DIR := 
+export LLVM_DIR := 
+export WABT_DIR := 
+export BINARYEN_DIR := 
 #export LLVM_DIR := llvm-project/build/bin/
-#export WABT_DIR := wabt/bin/
+#export WABT_DIR := wabt/build/
 #export BINARYEN_DIR := binaryen/build/bin/
-export LLVM_DIR := ~/repos/llvm/llvm10/llvm-project/build/bin/
-#export WABT_DIR := ~/repos/wabt/wabt-1.0.12/
-export WABT_DIR := ~/repos/wabt/wabt/build/
-export BINARYEN_DIR := ~/repos/binaryen/binaryen-1.37.35/
 
 # compiler flags
 export OPTIMIZATION_CLANG := -O3        #-Oz, -Os, -O0, -O1, -O2, or -O3
