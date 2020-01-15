@@ -1,6 +1,13 @@
 
+
 #if !WASM
 #include <stdint.h>
+#else
+typedef unsigned char uint8_t;
+typedef unsigned short uint16_t;
+typedef unsigned int uint32_t;
+typedef unsigned long long uint64_t;
+typedef unsigned __int128 uint128_t;
 #endif
 
 #define uint128_t __uint128_t
@@ -251,47 +258,11 @@ void FUNCNAME(montmul)(UINT* restrict x, UINT* restrict y, UINT* restrict m, UIN
   }
 }
 
-// algorithm 14.36, Handbook of Applied Cryptography, http://cacr.uwaterloo.ca/hac/about/chap14.pdf
-// this is a copy/paste of the one above, but with signature x,y,out, and hard-coded m and inv.
+// like montmul, but with two of the args hard-coded
 void FUNCNAME(montmul_3args_)(UINT* restrict x, UINT* restrict y, UINT* restrict out){
   UINT* m = (UINT*)4444444;    // hard-code address to m here
   UINT* inv = (UINT*)6666666;  // hard-code address to inv here
-  UINT A[NUM_LIMBS*2] = {0};
-  //#pragma unroll	// this unroll increases binary size by a lot
-  for (int i=0; i<NUM_LIMBS; i++){
-    UINT ui = (A[i]+x[i]*y[0])*inv[0];
-    UINT carry = 0;
-    #pragma unroll
-    for (int j=0; j<NUM_LIMBS; j++){
-      UINT2 xiyj = (UINT2)x[i]*y[j];
-      UINT2 uimj = (UINT2)ui*m[j];
-      UINT2 partial_sum = xiyj+carry+A[i+j];
-      UINT2 sum = uimj+partial_sum;
-      A[i+j] = (UINT)sum;
-      carry = sum>>LIMB_BITS;
-      // if there was overflow in the sum beyond the carry:
-      if (sum<partial_sum){
-        int k=2;
-        while ( i+j+k<NUM_LIMBS*2 && A[i+j+k]==(UINT)0-1 ){ // note 0-1 is 0xffffffff
-          A[i+j+k]=0;
-          k++;
-        }
-        if (i+j+k<NUM_LIMBS*2)
-          A[i+j+k]+=1;
-      }
-      //printf("%d %d %llu %llu %llu %llu %llu %llu %llu %llu %llu\n",i,j,x[i],x[i]*y[0],ui,xiyj,uimj,partial_sum,sum,A[i+j],carry);
-    }
-    A[i+NUM_LIMBS]+=carry;
-  }
-
-  // instead of right shift, we just get the correct values
-  //#pragma unroll
-  for (int i=0; i<NUM_LIMBS;i++)
-    out[i] = A[i+NUM_LIMBS];
-
-  // final subtraction, first see if necessary
-  if (FUNCNAME(less_than_or_equal)(m,out)){
-    FUNCNAME(subtract)(out, m, out);
-  }
+  FUNCNAME(montmul)(x, y, m, inv, out);
 }
+
 
