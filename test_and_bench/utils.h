@@ -5,7 +5,7 @@
 // hex string to int array conversion
 // input is string of hex characters, without 0x prefix
 // also converts to little endian (ie least significant nibble first)
-void hexstr_to_bytearray(char* in, uint8_t* out){
+void hexstr_to_bytearray(uint8_t* out, char* in){
   //printf("hexstr_to_intarray(%s)\n",in);
   size_t len = strlen(in);
   uint8_t byte = 0;
@@ -29,7 +29,7 @@ void hexstr_to_bytearray(char* in, uint8_t* out){
 }
 
 // seems to work
-void bytearray_to_hexstr(uint8_t* in, int length, char* out){
+void bytearray_to_hexstr(char* out, uint8_t* in, int length){
   for (int i=0;i<length;i++){
     char* nibble;
     // first nibble
