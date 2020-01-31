@@ -93,6 +93,15 @@ void FUNCNAME(subtract)(UINT* restrict x, UINT* restrict y, UINT* restrict out){
   }
 }
 
+// add two numbers modulo another number, a+b (mod m)
+// algorithm 14.27, Handbook of Applied Cryptography, http://cacr.uwaterloo.ca/hac/about/chap14.pdf
+void FUNCNAME(addmod)(UINT* restrict x, UINT* restrict y, UINT* restrict out){
+  FUNCNAME(add)(UINT* restrict x, UINT* restrict y, UINT* restrict out);
+  if (FUNCNAME(less_than_or_equal)(m,out)){
+    FUNCNAME(subtract)(out, m, out);
+  }
+}
+
 // checks whether x<y
 // TODO: reference spec of this algorithm
 uint8_t FUNCNAME(less_than)(UINT* restrict x, UINT* restrict y){
