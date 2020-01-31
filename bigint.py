@@ -83,6 +83,24 @@ def square(x,out,b,t):
       c = u
     w[i+t] = u
 
+
+######################
+# Modular arithmetic #
+######################
+
+# add two numbers modulo another number, a+b (mod m)
+# algorithm 14.27, Handbook of Applied Cryptography, http://cacr.uwaterloo.ca/hac/about/chap14.pdf
+def addmod(x,y,m,out,base,num_limbs):
+  add(x,y,out,base,num_limbs)
+  if less_than_or_equal(m,out,num_limbs):
+    subtract(out,m,out,base,num_limbs)
+
+# compute x-y (mod m) for x>=y
+# algorithm 14.27, Handbook of Applied Cryptography, http://cacr.uwaterloo.ca/hac/about/chap14.pdf
+def subtractmod(x,y,m,out,base,num_limbs):
+  #  the book referenced says that this is the same as submod
+  subtract(x,y,out,base,num_limbs)
+
 # algorithm 14.32, Handbook of Applied Cryptography, http://cacr.uwaterloo.ca/hac/about/chap14.pdf
 def montgomery_reduction(T,m,minv,out,b,n):
   A=T
