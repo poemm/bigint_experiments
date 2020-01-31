@@ -22,7 +22,7 @@ int main(int argc, char** argv){
       hexstr_to_bytearray((uint8_t*)y,argv[3]+2);
       hexstr_to_bytearray((uint8_t*)expected,argv[4]+2);
       for (int i=0; i<NUM_ITERS; i++)
-        FUNCNAME(add)(x,y,out);
+        FUNCNAME(add)(out,x,y);
       if (NUM_ITERS==1){
         int error=0;
         for (int i=0; i<NUM_LIMBS; i++){
@@ -46,7 +46,7 @@ int main(int argc, char** argv){
       hexstr_to_bytearray((uint8_t*)y,argv[3]+2);
       hexstr_to_bytearray((uint8_t*)expected,argv[4]+2);
       for (int i=0; i<NUM_ITERS; i++)
-        FUNCNAME(subtract)(x,y,out);
+        FUNCNAME(subtract)(out,x,y);
       if (NUM_ITERS==1){
         int error=0;
         for (int i=0; i<NUM_LIMBS; i++){
@@ -114,7 +114,7 @@ int main(int argc, char** argv){
       hexstr_to_bytearray((uint8_t*)y,argv[3]+2);
       hexstr_to_bytearray((uint8_t*)expected,argv[4]+2);
       for (int i=0; i<NUM_ITERS; i++)
-        FUNCNAME(mul)(x,y,out);
+        FUNCNAME(mul)(out,x,y);
       if (NUM_ITERS==1){
         int error=0;
         for (int i=0; i<2*NUM_LIMBS; i++){
@@ -140,7 +140,7 @@ int main(int argc, char** argv){
       hexstr_to_bytearray((uint8_t*)inv,argv[5]+2);
       hexstr_to_bytearray((uint8_t*)expected,argv[6]+2);
       for (int i=0; i<NUM_ITERS; i++)
-        FUNCNAME(montmul)(x,y,m,inv,out);
+        FUNCNAME(montmul)(out,x,y,m,inv);
       if (NUM_ITERS==1){
         int error=0;
         for (int i=0; i<NUM_LIMBS; i++){

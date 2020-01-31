@@ -69,7 +69,7 @@ Warning: LIMB_BITS corresponds to the uint*_t type, and multiplication requires 
 // add two numbers modulo the precision of NNUM_LIMBS limbs
 // algorithm 14.7, Handbook of Applied Cryptography, http://cacr.uwaterloo.ca/hac/about/chap14.pdf
 //   except we ignore the final carry in step 3 since we assume that there is no extra limb
-void FUNCNAME(add)(UINT* restrict x, UINT* restrict y, UINT* restrict out){
+void FUNCNAME(add)(UINT* out, UINT* const x, UINT* const y){
   UINT carry=0;
   #pragma unroll
   for (int i=0; i<NUM_LIMBS;i++){
@@ -82,7 +82,7 @@ void FUNCNAME(add)(UINT* restrict x, UINT* restrict y, UINT* restrict out){
 // compute x-y for x>=y
 // algorithm 14.9, Handbook of Applied Cryptography, http://cacr.uwaterloo.ca/hac/about/chap14.pdf
 // but algorithm 14.9 uses negative numbers, which we don't support, so we modify it, needs review
-void FUNCNAME(subtract)(UINT* restrict x, UINT* restrict y, UINT* restrict out){
+void FUNCNAME(subtract)(UINT* out, UINT* const x, UINT* const y){
   //printf("subtract()\n");
   UINT carry=0;
   #pragma unroll
@@ -95,7 +95,7 @@ void FUNCNAME(subtract)(UINT* restrict x, UINT* restrict y, UINT* restrict out){
 
 // checks whether x<y
 // TODO: reference spec of this algorithm
-uint8_t FUNCNAME(less_than)(UINT* restrict x, UINT* restrict y){
+uint8_t FUNCNAME(less_than)(UINT* const x, UINT* const y){
   for (int i=NUM_LIMBS-1;i>=0;i--){
     if (x[i]>y[i])
       return 0;
@@ -109,7 +109,7 @@ uint8_t FUNCNAME(less_than)(UINT* restrict x, UINT* restrict y){
 // checks whether x<=y
 // NUM_LIMBS is number of limbs
 // TODO: reference spec of this algorithm
-uint8_t FUNCNAME(less_than_or_equal)(UINT* restrict x, UINT* restrict y){
+uint8_t FUNCNAME(less_than_or_equal)(UINT* const x, UINT* const y){
   for (int i=NUM_LIMBS-1;i>=0;i--){
     if (x[i]>y[i])
       return 0;
@@ -124,7 +124,7 @@ uint8_t FUNCNAME(less_than_or_equal)(UINT* restrict x, UINT* restrict y){
 // but assume they both have the same number of limbs, this can be changed
 // out should have double the limbs of inputs
 // num_limbs corresponds to n+1 in the book
-void FUNCNAME(mul)(UINT* restrict x, UINT* restrict y, UINT* restrict out){
+void FUNCNAME(mul)(UINT* out, UINT* const x, UINT* const y){
   UINT* w = out;
   for (int i=0; i<2*NUM_LIMBS; i++)
     w[i]=0;
@@ -147,7 +147,7 @@ void FUNCNAME(mul)(UINT* restrict x, UINT* restrict y, UINT* restrict out){
 // algorithm 14.16, Handbook of Applied Cryptography, http://cacr.uwaterloo.ca/hac/about/chap14.pdf
 // NUM_LIMBS is t (number of limbs) in the book, and the base is UINT*, usually uint32_t or uint64_t
 // output out should have double the limbs of input x
-void FUNCNAME(square)(UINT* x, UINT* out){
+void FUNCNAME(square)(UINT* out, UINT* const x){
   UINT w[NUM_LIMBS*2];
   for (int i=0; i< 2*NUM_LIMBS; i++)
     w[i]=0;
@@ -179,8 +179,8 @@ void FUNCNAME(square)(UINT* x, UINT* out){
 
 // add two numbers modulo another number, a+b (mod m)
 // algorithm 14.27, Handbook of Applied Cryptography, http://cacr.uwaterloo.ca/hac/about/chap14.pdf
-void FUNCNAME(addmod)(UINT* restrict x, UINT* restrict y, UINT* restrict m, UINT* restrict out){
-  FUNCNAME(add)(UINT* restrict x, UINT* restrict y, UINT* restrict out);
+void FUNCNAME(addmod)(UINT* out, UINT* const x, UINT* const y, UINT* const m){
+  FUNCNAME(add)(out, x, y);
   if (FUNCNAME(less_than_or_equal)(m,out)){
     FUNCNAME(subtract)(out, m, out);
   }
@@ -188,13 +188,13 @@ void FUNCNAME(addmod)(UINT* restrict x, UINT* restrict y, UINT* restrict m, UINT
 
 // compute x-y (mod m) for x>=y
 // algorithm 14.27, Handbook of Applied Cryptography, http://cacr.uwaterloo.ca/hac/about/chap14.pdf
-void FUNCNAME(subtractmod)(UINT* restrict x, UINT* restrict y, UINT* restrict m, UINT* restrict out){
+void FUNCNAME(subtractmod)(UINT* out, UINT* const x, UINT* const y, UINT* const m){
   // the book referenced says that this is the same as submod
-  FUNCNAME(subtract)(x, y, out);
+  FUNCNAME(subtract)(out, x, y);
 }
 
 // algorithm 14.32, Handbook of Applied Cryptography, http://cacr.uwaterloo.ca/hac/about/chap14.pdf
-void FUNCNAME(montreduce)(UINT*T, UINT* m, UINT* minv, UINT* out){
+void FUNCNAME(montreduce)(UINT* out, UINT*T, UINT* m, UINT* minv){
 
   UINT* A = T;
   for (int i=0; i<NUM_LIMBS; i++){
@@ -230,17 +230,17 @@ void FUNCNAME(montreduce)(UINT*T, UINT* m, UINT* minv, UINT* out){
 }
 
 
-void FUNCNAME(montsquare)(UINT* restrict x, UINT* restrict out, UINT* restrict m, UINT* restrict inv){
+void FUNCNAME(montsquare)(UINT* out, UINT* const x, UINT* const m, UINT* const inv){
   UINT out_internal[NUM_LIMBS*2];
-  FUNCNAME(square)(x, out_internal);
-  FUNCNAME(montreduce)(x, out_internal, m, inv);
+  FUNCNAME(square)(out_internal, x);
+  FUNCNAME(montreduce)(out_internal, x, m, inv);
   for (int i=0; i<NUM_LIMBS; i++){
     out[i] = out_internal[i];
   }
 }
 
 // algorithm 14.36, Handbook of Applied Cryptography, http://cacr.uwaterloo.ca/hac/about/chap14.pdf
-void FUNCNAME(montmul)(UINT* restrict x, UINT* restrict y, UINT* restrict m, UINT* restrict inv, UINT* restrict out){
+void FUNCNAME(montmul)(UINT* out, UINT* const x, UINT* const y, UINT* const m, UINT* const inv){
   UINT A[NUM_LIMBS*2] = {0};
   //#pragma unroll	// this unroll increases binary size by a lot
   for (int i=0; i<NUM_LIMBS; i++){
@@ -281,10 +281,10 @@ void FUNCNAME(montmul)(UINT* restrict x, UINT* restrict y, UINT* restrict m, UIN
 }
 
 // like montmul, but with two of the args hard-coded
-void FUNCNAME(montmul_3args_)(UINT* restrict x, UINT* restrict y, UINT* restrict out){
-  UINT* m = (UINT*)4444444;    // hard-code address to m here
-  UINT* inv = (UINT*)6666666;  // hard-code address to inv here
-  FUNCNAME(montmul)(x, y, m, inv, out);
+void FUNCNAME(montmul_3args_)(UINT* out, UINT* const x, UINT* const y){
+  UINT* m = (UINT*)4444444;    // hard-code m or address to m here
+  UINT* inv = (UINT*)6666666;  // hard-code inv or address to inv here
+  FUNCNAME(montmul)(out, x, y, m, inv);
 }
 
 

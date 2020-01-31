@@ -263,7 +263,7 @@ int main(int argc, char** argv){
     }
   }
   // the tester
-  FUNCNAME(montmul)(x,y,m,inv,out);
+  FUNCNAME(montmul)(out,x,y,m,inv);
   for (int i=0; i<NUM_LIMBS; i++){
     if (out[i]!=out_expected[i]){
       printf("FAILED\n");
@@ -284,41 +284,41 @@ int main(int argc, char** argv){
 #else
   // the bencher, this will take a while
   for (int i=0;i<20000;i++){
-    FUNCNAME(montmul)(x,y,m,inv,out);
-    FUNCNAME(montmul)(out,y,m,inv,out);
-    FUNCNAME(montmul)(x,out,m,inv,out);
-    FUNCNAME(montmul)(out,y,m,inv,out);
-    FUNCNAME(montmul)(x,out,m,inv,out);
-    FUNCNAME(montmul)(out,y,m,inv,out);
-    FUNCNAME(montmul)(x,out,m,inv,out);
-    FUNCNAME(montmul)(out,y,m,inv,out);
+    FUNCNAME(montmul)(out,x,y,m,inv);
+    FUNCNAME(montmul)(out,y,m,inv);
+    FUNCNAME(montmul)(out,x,out,m,inv);
+    FUNCNAME(montmul)(out,out,y,m,inv);
+    FUNCNAME(montmul)(out,x,out,m,inv);
+    FUNCNAME(montmul)(out,out,y,m,inv);
+    FUNCNAME(montmul)(out,x,out,m,inv);
+    FUNCNAME(montmul)(out,out,y,m,inv);
 
-    FUNCNAME(montmul)(x,y,m,inv,out);
-    FUNCNAME(montmul)(out,y,m,inv,out);
-    FUNCNAME(montmul)(x,out,m,inv,out);
-    FUNCNAME(montmul)(out,y,m,inv,out);
-    FUNCNAME(montmul)(x,out,m,inv,out);
-    FUNCNAME(montmul)(out,y,m,inv,out);
-    FUNCNAME(montmul)(x,out,m,inv,out);
-    FUNCNAME(montmul)(out,y,m,inv,out);
+    FUNCNAME(montmul)(out,x,y,m,inv);
+    FUNCNAME(montmul)(out,out,y,m,inv);
+    FUNCNAME(montmul)(out,x,out,m,inv);
+    FUNCNAME(montmul)(out,out,y,m,inv);
+    FUNCNAME(montmul)(out,x,out,m,inv);
+    FUNCNAME(montmul)(out,out,y,m,inv);
+    FUNCNAME(montmul)(out,x,out,m,inv);
+    FUNCNAME(montmul)(out,out,y,m,inv);
 
-    FUNCNAME(montmul)(x,y,m,inv,out);
-    FUNCNAME(montmul)(out,y,m,inv,out);
-    FUNCNAME(montmul)(x,out,m,inv,out);
-    FUNCNAME(montmul)(out,y,m,inv,out);
-    FUNCNAME(montmul)(x,out,m,inv,out);
-    FUNCNAME(montmul)(out,y,m,inv,out);
-    FUNCNAME(montmul)(x,out,m,inv,out);
-    FUNCNAME(montmul)(out,y,m,inv,out);
+    FUNCNAME(montmul)(out,x,y,m,inv);
+    FUNCNAME(montmul)(out,out,y,m,inv);
+    FUNCNAME(montmul)(out,x,out,m,inv);
+    FUNCNAME(montmul)(out,out,y,m,inv);
+    FUNCNAME(montmul)(out,x,out,m,inv);
+    FUNCNAME(montmul)(out,out,y,m,inv);
+    FUNCNAME(montmul)(out,x,out,m,inv);
+    FUNCNAME(montmul)(out,out,y,m,inv);
 
-    FUNCNAME(montmul)(x,y,m,inv,out);
-    FUNCNAME(montmul)(out,y,m,inv,out);
-    FUNCNAME(montmul)(x,out,m,inv,out);
-    FUNCNAME(montmul)(out,y,m,inv,out);
-    FUNCNAME(montmul)(x,out,m,inv,out);
-    FUNCNAME(montmul)(out,y,m,inv,out);
-    FUNCNAME(montmul)(x,out,m,inv,out);
-    FUNCNAME(montmul)(out,y,m,inv,out);
+    FUNCNAME(montmul)(out,x,y,m,inv);
+    FUNCNAME(montmul)(out,out,y,m,inv);
+    FUNCNAME(montmul)(out,x,out,m,inv);
+    FUNCNAME(montmul)(out,out,y,m,inv);
+    FUNCNAME(montmul)(out,x,out,m,inv);
+    FUNCNAME(montmul)(out,out,y,m,inv);
+    FUNCNAME(montmul)(out,x,out,m,inv);
+    FUNCNAME(montmul)(out,out,y,m,inv);
   }
 #endif
 
