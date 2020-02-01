@@ -85,7 +85,7 @@ def generate_montmul_tests(filename,execname,numtests,max_bits):
     #print("a",a,"b",b)
     # get expected output
     expected = [0]
-    bigint.montgomery_reduction([(a*b)%(2**max_bits),(a*b)//(2**max_bits)],[mod],[inv],expected,2**max_bits,1)  # using montreduce, which must be tested separately
+    bigint.montgomery_reduction(expected,[(a*b)%(2**max_bits),(a*b)//(2**max_bits)],[mod],[inv],2**max_bits,1)  # using montreduce, which must be tested separately
     # print command
     command = execname+" montmul "+hex(a)+" "+hex(b)+" "+hex(mod)+" "+hex(inv)+" "+hex(expected[0])+"\n"
     f.write(command)

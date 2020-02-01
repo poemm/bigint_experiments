@@ -26,7 +26,7 @@ test:
 	python3 generate_tests.py montmul 256 tests.sh ./test256_32 $(num_tests)
 	python3 generate_tests.py montmul 256 tests.sh ./test256_64 $(num_tests)
 	bash tests.sh
-	rm tests.sh
+	#rm tests.sh
 
 
 bench_montmul:
