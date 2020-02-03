@@ -14,7 +14,11 @@ gcc -std=c99 callmul256x256_512.c mul256x256_512.s -fno-pie -no-pie
 #include <inttypes.h>
 #include <string.h>
 
+
+//#define COUNT_CYCLES_X86_64 0
+#ifdef COUNT_CYCLES_X86_64
 #include <x86intrin.h> // for __rdtsc();
+#endif
 
 #if TO512
   #define mul256x256 mul256x256_512
@@ -25,7 +29,7 @@ gcc -std=c99 callmul256x256_512.c mul256x256_512.s -fno-pie -no-pie
 void mul256x256(uint32_t* out, uint32_t* a, uint32_t* b);
 
 void bench(uint32_t* out, uint32_t* a, uint32_t* b){
-  for (int i=0; i<100000;i++){
+  for (int i=0; i<10000;i++){
     mul256x256(out,a,b); mul256x256(out,a,b); mul256x256(out,a,b); mul256x256(out,a,b);
     mul256x256(out,a,b); mul256x256(out,a,b); mul256x256(out,a,b); mul256x256(out,a,b);
     mul256x256(out,a,b); mul256x256(out,a,b); mul256x256(out,a,b); mul256x256(out,a,b);
@@ -105,10 +109,14 @@ int main(int argc, char** argv) {
 #if BENCHMARK
   bench(out,a,b);
 #else // no bench, just evaluate
+#ifdef COUNT_CYCLES_X86_64
   uint64_t cycles1 = __rdtsc();
+#endif
   mul256x256(out,a,b);
+#ifdef COUNT_CYCLES_X86_64
   uint64_t cycles2 = __rdtsc();
   printf("num cycles %u\n", (uint32_t)(cycles2-cycles1));
+#endif
 #endif
 
   int error = 0;
@@ -117,6 +125,7 @@ int main(int argc, char** argv) {
       error=1;
   }
   //error = 1;
+  /*
   if (error){
     for (int i=0; i<16; i++)
       printf(" %08x", ((uint32_t*)a)[i]);
@@ -129,6 +138,22 @@ int main(int argc, char** argv) {
     printf("\n");
     for (int i=0; i<16; i++)
       printf(" %08x", ((uint32_t*)out_expected)[i]);
+    printf("\n");
+    printf("\n");
+  }
+  */
+  if (error){
+    for (int i=0; i<8; i+=2)
+      printf(" %08x%08x", ((uint32_t*)a)[i+1],((uint32_t*)a)[i]);
+    printf("\n");
+    for (int i=0; i<8; i+=2)
+      printf(" %08x%08x", ((uint32_t*)b)[i+1],((uint32_t*)b)[i]);
+    printf("\n");
+    for (int i=0; i<16; i+=2)
+      printf(" %08x%08x", ((uint32_t*)out)[i+1],((uint32_t*)out)[i]);
+    printf("\n");
+    for (int i=0; i<16; i+=2)
+      printf(" %08x%08x", ((uint32_t*)out_expected)[i+1],((uint32_t*)out_expected)[i]);
     printf("\n");
     printf("\n");
   }
