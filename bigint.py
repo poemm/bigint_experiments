@@ -162,7 +162,9 @@ def montgomery_multiplication(out,x,y,m,minv,b,n):
   if less_than_or_equal(m,out,n):
     out = subtract(out,m,out,b,n)
 
-# TODO: cite reference for this
+
+# algorithm 14.16 followed by 14.32
+# this might be faster than algorithm 14.36
 def montgomery_square(out,x,m,minv,b,n):
   out_internal = [0]*2*n
   square(out_internal,x,b,n)

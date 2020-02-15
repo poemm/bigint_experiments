@@ -83,7 +83,6 @@ void FUNCNAME(add)(UINT* const out, const UINT* const x, const UINT* const y){
 // algorithm 14.9, Handbook of Applied Cryptography, http://cacr.uwaterloo.ca/hac/about/chap14.pdf
 // but algorithm 14.9 uses negative numbers, which we don't support, so we modify it, needs review
 void FUNCNAME(subtract)(UINT* const out, const UINT* const x, const UINT* const y){
-  //printf("subtract()\n");
   UINT carry=0;
   #pragma unroll
   for (int i=0; i<NUM_LIMBS;i++){
@@ -247,19 +246,12 @@ void FUNCNAME(montreduce)(UINT* const out, UINT* const T, const UINT* const m, c
   }
 }
 
-// TODO: cite this algorithm
+// algorithm 14.16 followed by 14.32
+// this might be faster than algorithm 14.36
 void FUNCNAME(montsquare)(UINT* const out, const UINT* const x, const UINT* const m, const UINT* const inv){
   UINT out_internal[NUM_LIMBS*2];
   FUNCNAME(square)(out_internal, x);
-  //printf("\nsquare: ");
-  //for(int i=0; i<NUM_LIMBS*2; i++)
-  //  printf("%lx ",out_internal[i]);
-  //printf("\n");
-  //UINT out_internal2[NUM_LIMBS];
   FUNCNAME(montreduce)(out, out_internal, m, inv);
-  //for (int i=0; i<NUM_LIMBS; i++){
-  //  out[i] = out_internal2[i];
-  //}
 }
 
 // algorithm 14.36, Handbook of Applied Cryptography, http://cacr.uwaterloo.ca/hac/about/chap14.pdf
