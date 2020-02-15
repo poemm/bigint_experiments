@@ -27,7 +27,7 @@ int main(int argc, char** argv){
         int error=0;
         for (int i=0; i<NUM_LIMBS; i++){
           if(out[i]!=expected[i]){
-            printf("ERROR: out[%d]=%x and expected[%d]=%x\n",i,out[i],i,expected[i]);
+            printf("ERROR: out[%d]=%lx and expected[%d]=%lx\n",i,out[i],i,expected[i]);
             error=1;
           }
         }
@@ -51,7 +51,7 @@ int main(int argc, char** argv){
         int error=0;
         for (int i=0; i<NUM_LIMBS; i++){
           if(out[i]!=expected[i]){
-            printf("ERROR: out[%d]=%x and expected[%d]=%x\n",i,out[i],i,expected[i]);
+            printf("ERROR: out[%d]=%lx and expected[%d]=%lx\n",i,out[i],i,expected[i]);
             error=1;
           }
         }
@@ -119,11 +119,62 @@ int main(int argc, char** argv){
         int error=0;
         for (int i=0; i<2*NUM_LIMBS; i++){
           if(out[i]!=expected[i]){
-            printf("ERROR: out[%d]=%x and expected[%d]=%x\n",i,out[i],i,expected[i]);
+            printf("ERROR: out[%d]=%lx and expected[%d]=%lx\n",i,out[i],i,expected[i]);
             error=1;
           }
         }
         if (!error){ printf("correct\n");}
+      }
+    }
+    else if (strcmp (argv[1],"square") == 0){
+      printf("testing square\n");
+      if (argc!=4){
+        printf("./test_and_bench square 0x<hex of x> 0x<hex of expected>\n");
+	return -1;
+      }
+
+      UINT x[NUM_LIMBS], expected[2*NUM_LIMBS], out[2*NUM_LIMBS];
+      hexstr_to_bytearray((uint8_t*)x,argv[2]+2);
+      hexstr_to_bytearray((uint8_t*)expected,argv[3]+2);
+      for (int i=0; i<NUM_ITERS; i++)
+        FUNCNAME(square)(out,x);
+      if (NUM_ITERS==1){
+        int error=0;
+        for (int i=0; i<2*NUM_LIMBS; i++){
+          if(out[i]!=expected[i]){
+            printf("ERROR: out[%d]=%lx and expected[%d]=%lx\n",i,out[i],i,expected[i]);
+            error=1;
+          }
+        }
+        if (!error){ printf("correct\n");}
+      }
+    }
+    else if (strcmp (argv[1],"montreduce") == 0){
+      printf("testing montgomery reduce\n");
+      if (argc!=6){
+        printf("./test_and_bench montreduce 0x<hex of x> 0x<hex of mod> 0x<hex of modinv> 0x<hex of expected>\n");
+        return -1;
+      }
+
+      UINT x[2*NUM_LIMBS], m[NUM_LIMBS], inv[NUM_LIMBS], expected[NUM_LIMBS], out[NUM_LIMBS];
+      // init x with zeros, just in case arg is small
+      for (int i=0; i<NUM_LIMBS*2; i++)
+        x[i]=0;
+      hexstr_to_bytearray((uint8_t*)x,argv[2]+2);
+      hexstr_to_bytearray((uint8_t*)m,argv[3]+2);
+      hexstr_to_bytearray((uint8_t*)inv,argv[4]+2);
+      hexstr_to_bytearray((uint8_t*)expected,argv[5]+2);
+      for (int i=0; i<NUM_ITERS; i++)
+        FUNCNAME(montreduce)(out,x,m,inv);
+      if (NUM_ITERS==1){
+        int error=0;
+        for (int i=0; i<NUM_LIMBS; i++){
+          if(out[i]!=expected[i]){
+            printf("ERROR: out[%d]=%lx and expected[%d]=%lx\n",i,out[i],i,expected[i]);
+            error=1;
+          }
+        }
+      if (!error){ printf("correct\n");}
       }
     }
     else if (strcmp (argv[1],"montmul") == 0){
@@ -145,13 +196,37 @@ int main(int argc, char** argv){
         int error=0;
         for (int i=0; i<NUM_LIMBS; i++){
           if(out[i]!=expected[i]){
-            printf("ERROR: out[%d]=%x and expected[%d]=%x\n",i,out[i],i,expected[i]);
+            printf("ERROR: out[%d]=%lx and expected[%d]=%lx\n",i,out[i],i,expected[i]);
             error=1;
           }
         }
       if (!error){ printf("correct\n");}
       }
+    }
+    else if (strcmp (argv[1],"montsquare") == 0){
+      printf("testing montgomery square\n");
+      if (argc!=6){
+        printf("./test_and_bench montsquare 0x<hex of x> 0x<hex of mod> 0x<hex of modinv> 0x<hex of expected>\n");
+        return -1;
+      }
 
+      UINT x[NUM_LIMBS], m[NUM_LIMBS], inv[NUM_LIMBS], expected[NUM_LIMBS], out[NUM_LIMBS];
+      hexstr_to_bytearray((uint8_t*)x,argv[2]+2);
+      hexstr_to_bytearray((uint8_t*)m,argv[3]+2);
+      hexstr_to_bytearray((uint8_t*)inv,argv[4]+2);
+      hexstr_to_bytearray((uint8_t*)expected,argv[5]+2);
+      for (int i=0; i<NUM_ITERS; i++)
+        FUNCNAME(montsquare)(out,x,m,inv);
+      if (NUM_ITERS==1){
+        int error=0;
+        for (int i=0; i<NUM_LIMBS; i++){
+          if(out[i]!=expected[i]){
+            printf("ERROR: out[%d]=%lx and expected[%d]=%lx\n",i,out[i],i,expected[i]);
+            error=1;
+          }
+        }
+      if (!error){ printf("correct\n");}
+      }
     }
     else {
       printf("./test_and_bench <testname> ...\n");

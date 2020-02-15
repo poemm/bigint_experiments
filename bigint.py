@@ -36,14 +36,14 @@ def mul(out,x,y,base,num_limbs):
   for i in range(num_limbs):
     c = 0
     for j in range(num_limbs):
-      print(i,j,c)
+      #print(i,j,c)
       uv = w[i+j] + x[j]*y[i] + c
       w[i+j] = uv % base
       c = uv // base
-      print(x[j]*y[i],c,w[i+j])
-      print(w)
+      #print(hex(x[j]*y[i]),c,hex(w[i+j]))
+      #print(w)
     w[i+num_limbs] = c
-    print(w)
+    #print(w)
 
 
 # less-than operator <
@@ -103,7 +103,7 @@ def subtractmod(out,x,y,m,base,num_limbs):
 
 # algorithm 14.32, Handbook of Applied Cryptography, http://cacr.uwaterloo.ca/hac/about/chap14.pdf
 def montgomery_reduction(out,T,m,minv,b,n):
-  A=T
+  A = T+([0]*(2*n-len(T)))
   for i in range(n):
     ui = (A[i]*minv[0]) % b
     carry=0
@@ -112,16 +112,20 @@ def montgomery_reduction(out,T,m,minv,b,n):
       sum_ = (A[i+j] + uimj + carry)%(b*b)
       A[i+j] = sum_ % b
       carry = sum_ // b
+      #print(i,j,hex(A[i+j]),hex(carry))
     # carry may be nonzero, so keep carrying
     k=1
     while carry and i+j+k<2*n:
+      #print(i+j+k, 2*n)
       sum_ = (A[i+j+k]+carry)%(b*b)
       A[i+j+k] = sum_ % b
       carry = sum_ // b
       k+=1
+    #print("A:", [hex(a) for a in A])
   # instead of right shift, just discard lower limbs which are 0's anyway
   for i in range(n):
     out[i]=A[i+n]
+  #print("out before final sub:",[hex(o) for o in out])
   # possible final subtraction
   if less_than_or_equal(m,out,n):
     subtract(out,m,out,b,n)
@@ -158,9 +162,18 @@ def montgomery_multiplication(out,x,y,m,minv,b,n):
   if less_than_or_equal(m,out,n):
     out = subtract(out,m,out,b,n)
 
+# TODO: cite reference for this
+def montgomery_square(out,x,m,minv,b,n):
+  out_internal = [0]*2*n
+  square(out_internal,x,b,n)
+  montgomery_reduction(out,out_internal,m,minv,b,n)
 
 
-# some format conversions
+
+###########################
+# some format conversions #
+###########################
+
 def int_to_digits(bigint, base):
   digits=[]
   while bigint>0:
@@ -335,4 +348,79 @@ if __name__ == "__main__":
     print(out==expected,out,expected)
     #print([hex(e) for e in out])
     #print([hex(e) for e in expected])
+  if sys.argv[1]=="mul":
+    num_limbs=4
+    base=2**64
+    out=[0]*2*num_limbs
+    # parse args
+    x=int_to_digits(int(sys.argv[2],16),base)
+    y=int_to_digits(int(sys.argv[3],16),base)
+    expected=int_to_digits(int(sys.argv[4],16),base)
+    # make sure args have the right size
+    x=x+([0]*(num_limbs-len(x)))
+    y=y+([0]*(num_limbs-len(y)))
+    expected=expected+([0]*(2*num_limbs-len(expected)))
+    #print(x,y,m,inv,expected)
+    # perform operation
+    mul(out,x,y,base,num_limbs)
+    print(out==expected,out,expected)
+    #print([hex(e) for e in out])
+    #print([hex(e) for e in expected])
+  if sys.argv[1]=="square":
+    num_limbs=4
+    base=2**64
+    out=[0]*2*num_limbs
+    # parse args
+    x=int_to_digits(int(sys.argv[2],16),base)
+    expected=int_to_digits(int(sys.argv[3],16),base)
+    # make sure args have the right size
+    x=x+([0]*(num_limbs-len(x)))
+    expected=expected+([0]*(2*num_limbs-len(expected)))
+    #print(x,y,m,inv,expected)
+    # perform operation
+    square(out,x,base,num_limbs)
+    print(out==expected,out,expected)
+    #print([hex(e) for e in out])
+    #print([hex(e) for e in expected])
+  if sys.argv[1]=="montreduce":
+    num_limbs=4
+    base=2**64
+    out=[0]*num_limbs
+    # parse args
+    x=int_to_digits(int(sys.argv[2],16),base)
+    m=int_to_digits(int(sys.argv[3],16),base)
+    inv=int_to_digits(int(sys.argv[4],16),base)
+    expected=int_to_digits(int(sys.argv[5],16),base)
+    # make sure args have the right size
+    x=x+([0]*(num_limbs-len(x)))
+    m=m+([0]*(num_limbs-len(m)))
+    inv=inv+([0]*(num_limbs-len(inv)))
+    expected=expected+([0]*(num_limbs-len(expected)))
+    #print(x,y,m,inv,expected)
+    # perform operation
+    montgomery_reduction(out,x,m,inv,base,num_limbs)
+    print(out==expected,[hex(o) for o in out],[hex(e) for e in expected])
+    #print([hex(e) for e in out])
+    #print([hex(e) for e in expected])
+  if sys.argv[1]=="montsquare":
+    num_limbs=4
+    base=2**64
+    out=[0]*num_limbs
+    # parse args
+    x=int_to_digits(int(sys.argv[2],16),base)
+    m=int_to_digits(int(sys.argv[3],16),base)
+    inv=int_to_digits(int(sys.argv[4],16),base)
+    expected=int_to_digits(int(sys.argv[5],16),base)
+    # make sure args have the right size
+    x=x+([0]*(num_limbs-len(x)))
+    m=m+([0]*(num_limbs-len(m)))
+    inv=inv+([0]*(num_limbs-len(inv)))
+    expected=expected+([0]*(num_limbs-len(expected)))
+    #print(x,y,m,inv,expected)
+    # perform operation
+    montgomery_square(out,x,m,inv,base,num_limbs)
+    print(out==expected,[hex(o) for o in out],[hex(e) for e in expected])
+    #print([hex(e) for e in out])
+    #print([hex(e) for e in expected])
+
 

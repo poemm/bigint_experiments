@@ -59,6 +59,42 @@ def generate_mul_tests(filename,execname,numtests,max_bits):
     f.write(command)
   f.close
 
+def generate_square_tests(filename,execname,numtests,max_bits):
+  f = open(filename, 'a')
+  for i in range(numtests):
+    a=random.randint(0,2**max_bits-1)
+    expected=a*a
+    command = execname+" square "+hex(a)+" "+hex(expected)+"\n"
+    f.write(command)
+  f.close
+
+def generate_montreduce_tests(filename,execname,numtests,max_bits):  
+  print("generate_monsreduce_tests(",filename,execname,numtests,max_bits,")")
+  f = open(filename, 'a')
+  base=2**max_bits
+  for i in range(numtests):
+    #print("i",i)
+    # mod and inv taken from bn curve stuff
+    #mod=21888242871839275222246405745257275088696311157297823662689037894645226208583
+    #inv=20744187311322900089244660184552684173238317978539439520726624125354108150665
+    # generate random mod, compute inv
+    mod = 0
+    while(mod%2==0):
+      mod=random.randint(0,2**max_bits-1)
+    #print("mod",mod)
+    inv = bigint.compute_minus_m_inv_mod_base(mod,base)
+    #print("inv",inv)
+    # generate random a
+    a=random.randint(0,2**(max_bits*2)-1)
+    #print("a",a,"b",b)
+    # get expected output
+    expected = [0]
+    bigint.montgomery_reduction(expected,[a%(2**max_bits),a//(2**max_bits)],[mod],[inv],2**max_bits,1)  # using montreduce, which must be tested separately
+    # print command
+    command = execname+" montreduce "+hex(a)+" "+hex(mod)+" "+hex(inv)+" "+hex(expected[0])+"\n"
+    f.write(command)
+  f.close
+
 def generate_montmul_tests(filename,execname,numtests,max_bits):  
   print("generate_montmul_tests(",filename,execname,numtests,max_bits,")")
   f = open(filename, 'a')
@@ -88,6 +124,36 @@ def generate_montmul_tests(filename,execname,numtests,max_bits):
     bigint.montgomery_reduction(expected,[(a*b)%(2**max_bits),(a*b)//(2**max_bits)],[mod],[inv],2**max_bits,1)  # using montreduce, which must be tested separately
     # print command
     command = execname+" montmul "+hex(a)+" "+hex(b)+" "+hex(mod)+" "+hex(inv)+" "+hex(expected[0])+"\n"
+    f.write(command)
+  f.close
+
+def generate_montsquare_tests(filename,execname,numtests,max_bits):  
+  print("generate_monsquare_tests(",filename,execname,numtests,max_bits,")")
+  f = open(filename, 'a')
+  base=2**max_bits
+  for i in range(numtests):
+    #print("i",i)
+    # mod and inv taken from bn curve stuff
+    #mod=21888242871839275222246405745257275088696311157297823662689037894645226208583
+    #inv=20744187311322900089244660184552684173238317978539439520726624125354108150665
+    # generate random mod, compute inv
+    mod = 0
+    while(mod%2==0):
+      mod=random.randint(0,2**max_bits-1)
+    #print("mod",mod)
+    inv = bigint.compute_minus_m_inv_mod_base(mod,base)
+    #print("inv",inv)
+    # generate random a and b
+    a=mod
+    while(a>=mod):
+      a=random.randint(0,2**max_bits-1)
+    #print("a",a,"b",b)
+    # get expected output
+    expected = [0]
+    #bigint.montgomery_reduction(expected,[(a*a)%(2**max_bits),(a*a)//(2**max_bits)],[mod],[inv],2**max_bits,1)  # using montreduce, which must be tested separately
+    bigint.montgomery_square(expected,[a],[mod],[inv],2**max_bits,1)
+    # print command
+    command = execname+" montsquare "+hex(a)+" "+hex(mod)+" "+hex(inv)+" "+hex(expected[0])+"\n"
     f.write(command)
   f.close
 
@@ -180,8 +246,14 @@ if __name__ == "__main__":
       generate_less_than_or_equal_tests(filename,execname,numtests,256)
     elif funcname=="mul":
       generate_mul_tests(filename,execname,numtests,max_bits)
+    elif funcname=="square":
+      generate_square_tests(filename,execname,numtests,max_bits)
+    elif funcname=="montreduce":
+      generate_montreduce_tests(filename,execname,numtests,max_bits)
     elif funcname=="montmul":
       generate_montmul_tests(filename,execname,numtests,max_bits)
+    elif funcname=="montsquare":
+      generate_montsquare_tests(filename,execname,numtests,max_bits)
     else:
       print("error: bad funcname:",funcname)
 
