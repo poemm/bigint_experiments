@@ -85,14 +85,15 @@ void FUNCNAME(add)(UINT* const out, const UINT* const x, const UINT* const y){
 void FUNCNAME(subtract)(UINT* const out, const UINT* const x, const UINT* const y){
   UINT carry=0;
   #pragma unroll
-  for (int i=0; i<NUM_LIMBS;i++){
-    //UINT temp = x[i]-carry;
-    //out[i] = temp-y[i];
-    //carry = (temp<y[i] || x[i]<carry) ? 1:0;
+  for (int i=0; i<NUM_LIMBS; i++){
+    UINT temp = x[i]-carry;
+    out[i] = temp-y[i];
+    carry = (temp<y[i] || x[i]<carry) ? 1:0;
+
     // casey's algorithm:
-    UINT out_temp = x[i]-y[i]-carry;
-    carry = (x[i]<y[i] || y[i]<carry) ? 1:0;
-    out[i] = out_temp;
+    //UINT out_temp = x[i]-y[i]-carry;
+    //carry = (x[i]<y[i] || y[i]<carry) ? 1:0;
+    //out[i] = out_temp;
   }
 }
 
