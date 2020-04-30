@@ -7,14 +7,14 @@ default: bench
 #compiler := gcc
 compiler := clang
 
-num_tests := 1000
+num_tests := 4
 
 test:
 	# 256-bit tests
 	${compiler} test_and_bench.c -o test256_32 -w -DBIGINT_BITS=256 -DLIMB_BITS=32 -DLIMB_BITS_OVERFLOW=64 -DNUM_ITERS=1
 	${compiler} test_and_bench.c -o test256_64 -w -DBIGINT_BITS=256 -DLIMB_BITS=64 -DLIMB_BITS_OVERFLOW=128 -DNUM_ITERS=1
-	#python3 generate_tests.py add 256 tests.sh ./test256_32 $(num_tests)
-	#python3 generate_tests.py add 256 tests.sh ./test256_64 $(num_tests)
+	python3 generate_tests.py add 256 tests.sh ./test256_32 $(num_tests)
+	python3 generate_tests.py add 256 tests.sh ./test256_64 $(num_tests)
 	python3 generate_tests.py addmod 256 tests.sh ./test256_32 $(num_tests)
 	python3 generate_tests.py addmod 256 tests.sh ./test256_64 $(num_tests)
 	#python3 generate_tests.py subtract 256 tests.sh ./test256_32 $(num_tests)

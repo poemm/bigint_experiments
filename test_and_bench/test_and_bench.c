@@ -34,7 +34,7 @@ int main(int argc, char** argv){
         if (!error){ printf("correct\n");}
       }
     }
-    if (strcmp(argv[1],"addmod") == 0){
+    else if (strcmp(argv[1],"addmod") == 0){
       printf("testing addmod\n");
       if (argc!=6){
         printf("./test_and_bench addmod 0x<hex of x> 0x<hex of y> 0x<hex of expected>\n");

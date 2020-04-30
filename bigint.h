@@ -73,9 +73,9 @@ void FUNCNAME(add)(UINT* const out, const UINT* const x, const UINT* const y){
   UINT carry=0;
   #pragma unroll
   for (int i=0; i<NUM_LIMBS;i++){
-    UINT temp = x[i]+y[i]+carry;
-    carry = x[i]>=temp ? 1:0;
-    out[i]=temp;
+    UINT2 temp = (UINT2)(x[i])+y[i]+carry;
+    carry = temp >> LIMB_BITS; 
+    out[i] = (UINT)temp;
   }
 }
 
@@ -200,9 +200,9 @@ void FUNCNAME(addmod)(UINT* const out, const UINT* const x, const UINT* const y,
   UINT carry=0;
   #pragma unroll
   for (int i=0; i<NUM_LIMBS;i++){
-    UINT temp = x[i]+y[i]+carry;
-    carry = x[i]>=temp ? 1:0;
-    out[i]=temp;
+    UINT2 temp = (UINT2)(x[i])+y[i]+carry;
+    carry = temp >> LIMB_BITS; 
+    out[i] = (UINT)temp;
   }
   if (carry || FUNCNAME(less_than_or_equal)(m,out)){
     FUNCNAME(subtract)(out, out, m);
