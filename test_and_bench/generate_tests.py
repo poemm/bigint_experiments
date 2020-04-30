@@ -50,6 +50,33 @@ def generate_add_tests(filename,execname,numtests,max_bits):
     f.write(command)
   f.close
 
+def generate_addmod_tests(filename,execname,numtests,max_bits):  
+  print("generate_addmod_tests(",filename,execname,numtests,max_bits,")")
+  f = open(filename, 'a')
+  for i in range(numtests):
+    # mod for bn curve
+    #mod = 0x2e67157159e5c639cf63e9cfb74492d9eb2022850278edf8ed84884a014afa37
+    # for secp256k1:
+    mod = 0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f
+    #inv = 0xc9bd1905155383999c46c2c295f2b761bcb223fedc24a059d838091dd2253531
+    #inv = 0xc9bd1905155383999c46c2c295f2b761bcb223fedc24a059d838091d0868192a
+
+    # generate random mod, compute inv
+    #mod = 0
+    #while(mod%2==0):
+    #  mod=random.randint(0,2**max_bits-1)
+    #print("mod",mod)
+    #inv = bigint.compute_minus_m_inv_mod_base(mod,base)
+    #print("inv",inv)
+
+    # generate random a and b
+    a=random.randrange(0, mod)
+    b=random.randrange(0, mod)
+    expected=(a+b)%mod
+    command = execname+" addmod "+hex(a)+" "+hex(b)+" "+hex(mod)+" "+hex(expected)+"\n"
+    f.write(command)
+  f.close
+
 def generate_subtract_tests(filename,execname,numtests,max_bits):  
   f = open(filename, 'a')
   for i in range(numtests):
@@ -366,6 +393,8 @@ if __name__ == "__main__":
     numtests = int(sys.argv[5])
     if funcname=="add":
       generate_add_tests(filename,execname,numtests,256)
+    if funcname=="addmod":
+      generate_addmod_tests(filename,execname,numtests,256)
     elif funcname=="subtract":
       generate_subtract_tests(filename,execname,numtests,max_bits)
     elif funcname=="lessthan":

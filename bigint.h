@@ -66,7 +66,7 @@ Warning: LIMB_BITS corresponds to the uint*_t type, and multiplication requires 
 #define FUNCNAME(name) FUNCNAME_(name,BIGINT_BITS,LIMB_BITS)
 
 
-// add two numbers modulo the precision of NNUM_LIMBS limbs
+// add two numbers modulo the precision of NUM_LIMBS limbs
 // algorithm 14.7, Handbook of Applied Cryptography, http://cacr.uwaterloo.ca/hac/about/chap14.pdf
 //   except we ignore the final carry in step 3 since we assume that there is no extra limb
 void FUNCNAME(add)(UINT* const out, const UINT* const x, const UINT* const y){
@@ -197,9 +197,15 @@ void FUNCNAME(square)(UINT* const out, const UINT* const x){
 // add two numbers modulo another number, a+b (mod m)
 // algorithm 14.27, Handbook of Applied Cryptography, http://cacr.uwaterloo.ca/hac/about/chap14.pdf
 void FUNCNAME(addmod)(UINT* const out, const UINT* const x, const UINT* const y, const UINT* const m){
-  FUNCNAME(add)(out, x, y);
-  if (FUNCNAME(less_than_or_equal)(m,out)){
-    FUNCNAME(subtract)(out, m, out);
+  UINT carry=0;
+  #pragma unroll
+  for (int i=0; i<NUM_LIMBS;i++){
+    UINT temp = x[i]+y[i]+carry;
+    carry = x[i]>=temp ? 1:0;
+    out[i]=temp;
+  }
+  if (carry || FUNCNAME(less_than_or_equal)(m,out)){
+    FUNCNAME(subtract)(out, out, m);
   }
 }
 

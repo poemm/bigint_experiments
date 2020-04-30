@@ -34,6 +34,31 @@ int main(int argc, char** argv){
         if (!error){ printf("correct\n");}
       }
     }
+    if (strcmp(argv[1],"addmod") == 0){
+      printf("testing addmod\n");
+      if (argc!=6){
+        printf("./test_and_bench addmod 0x<hex of x> 0x<hex of y> 0x<hex of expected>\n");
+	return -1;
+      }
+
+      UINT x[NUM_LIMBS], y[NUM_LIMBS], mod[NUM_LIMBS], expected[NUM_LIMBS], out[NUM_LIMBS];
+      hexstr_to_bytearray((uint8_t*)x,argv[2]+2);
+      hexstr_to_bytearray((uint8_t*)y,argv[3]+2);
+      hexstr_to_bytearray((uint8_t*)mod,argv[4]+2);
+      hexstr_to_bytearray((uint8_t*)expected,argv[5]+2);
+      for (int i=0; i<NUM_ITERS; i++)
+        FUNCNAME(addmod)(out,x,y,mod);
+      if (NUM_ITERS==1){
+        int error=0;
+        for (int i=0; i<NUM_LIMBS; i++){
+          if(out[i]!=expected[i]){
+            printf("ERROR: out[%d]=%lx and expected[%d]=%lx\n",i,out[i],i,expected[i]);
+            error=1;
+          }
+        }
+        if (!error){ printf("correct\n");}
+      }
+    }
     else if (strcmp (argv[1],"subtract") == 0){
       printf("testing subtract\n");
       if (argc!=5){
