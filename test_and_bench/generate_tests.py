@@ -5,6 +5,39 @@ import sys
 sys.path.append('..')
 import bigint
 
+##################
+# Helper functions
+
+def wikipedia_REDC(R,N,Nprime,T):
+  m = ((T%R)*Nprime) % R
+  t = (T+m*N) // R
+  if t>= N:
+    return t-N
+  else:
+    return t
+
+def wikipedia_inverse(a,n):
+  # https://en.wikipedia.org/wiki/Extended_Euclidean_algorithm#Modular_integers
+  t=0; newt=1
+  r=n; newr=a
+  i=0
+  while newr!=0:
+    quotient = r//newr
+    #print(i, quotient, r, newr)
+    i+=1
+    t,newt = newt, t-quotient*newt
+    r,newr = newr, r-quotient*newr
+  if r>1:
+    print("a is not invertible")
+    return None
+  if t<0:
+    t=t+n
+  return t
+
+
+###########################################################3############
+# The test generators
+
 
 def generate_add_tests(filename,execname,numtests,max_bits):  
   print("generate_add_tests(",filename,execname,numtests,max_bits,")")
@@ -74,13 +107,14 @@ def generate_montreduce_tests(filename,execname,numtests,max_bits):
   base=2**max_bits
   for i in range(numtests):
     #print("i",i)
-    # mod and inv taken from bn curve stuff
-    #mod=21888242871839275222246405745257275088696311157297823662689037894645226208583
-    #inv=20744187311322900089244660184552684173238317978539439520726624125354108150665
+    # mod for bn curve
+    mod = 0x2e67157159e5c639cf63e9cfb74492d9eb2022850278edf8ed84884a014afa37
+    # for secp256k1:
+    #mod = 0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f
     # generate random mod, compute inv
-    mod = 0
-    while(mod%2==0):
-      mod=random.randint(0,2**max_bits-1)
+    #mod = 0
+    #while(mod%2==0):
+    #  mod=random.randint(0,2**max_bits-1)
     #print("mod",mod)
     inv = bigint.compute_minus_m_inv_mod_base(mod,base)
     #print("inv",inv)
@@ -101,59 +135,153 @@ def generate_montmul_tests(filename,execname,numtests,max_bits):
   base=2**max_bits
   for i in range(numtests):
     #print("i",i)
-    # mod and inv taken from bn curve stuff
-    #mod=21888242871839275222246405745257275088696311157297823662689037894645226208583
-    #inv=20744187311322900089244660184552684173238317978539439520726624125354108150665
+    # mod for bn curve
+    mod = 0x2e67157159e5c639cf63e9cfb74492d9eb2022850278edf8ed84884a014afa37
+    # for secp256k1:
+    #mod = 0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f
+    #inv = 0xc9bd1905155383999c46c2c295f2b761bcb223fedc24a059d838091dd2253531
+    #inv = 0xc9bd1905155383999c46c2c295f2b761bcb223fedc24a059d838091d0868192a
+
     # generate random mod, compute inv
-    mod = 0
-    while(mod%2==0):
-      mod=random.randint(0,2**max_bits-1)
+    #mod = 0
+    #while(mod%2==0):
+    #  mod=random.randint(0,2**max_bits-1)
     #print("mod",mod)
-    inv = bigint.compute_minus_m_inv_mod_base(mod,base)
+    #inv = bigint.compute_minus_m_inv_mod_base(mod,base)
     #print("inv",inv)
+
     # generate random a and b
-    a=mod
-    b=mod
-    while(a>=mod):
-      a=random.randint(0,2**max_bits-1)
-    while(b>=mod):
-      b=random.randint(0,2**max_bits-1)
-    #print("a",a,"b",b)
-    # get expected output
-    expected = [0]
-    bigint.montgomery_reduction(expected,[(a*b)%(2**max_bits),(a*b)//(2**max_bits)],[mod],[inv],2**max_bits,1)  # using montreduce, which must be tested separately
+    a=random.randrange(0, mod)
+    b=random.randrange(0, mod)
+    # use wikipedia notation to compute (a*b) % mod
+    R = base; N=mod
+    Rprime = wikipedia_inverse(R,N)
+    Nprime = (R*Rprime-1)//N
+    assert R*Rprime - N*Nprime == 1     # Bézout's identity
+    aR = (a*R)%N
+    bR = (b*R)%N
+    T = aR*bR   # multiply first, then will reduce
+    outR = wikipedia_REDC(R,N,Nprime,T)
+    out = wikipedia_REDC(R,N,Nprime,outR)
+    assert out == (a*b)%N
     # print command
-    command = execname+" montmul "+hex(a)+" "+hex(b)+" "+hex(mod)+" "+hex(inv)+" "+hex(expected[0])+"\n"
+    command = execname+" montmul "+hex(aR)+" "+hex(bR)+" "+hex(mod)+" "+hex(Nprime)+" "+hex(outR)+"\n"
+    #command = "python3 ../bigint.py montmul "+hex(aR)+" "+hex(bR)+" "+hex(mod)+" "+hex(Nprime)+" "+hex(outR)+"\n"
     f.write(command)
   f.close
 
-def generate_montsquare_tests(filename,execname,numtests,max_bits):  
-  print("generate_monsquare_tests(",filename,execname,numtests,max_bits,")")
+def generate_montmul_noninterleaved_tests(filename,execname,numtests,max_bits):  
+  print("generate_montmul_noninterleaved_tests(",filename,execname,numtests,max_bits,")")
   f = open(filename, 'a')
   base=2**max_bits
   for i in range(numtests):
     #print("i",i)
-    # mod and inv taken from bn curve stuff
-    #mod=21888242871839275222246405745257275088696311157297823662689037894645226208583
-    #inv=20744187311322900089244660184552684173238317978539439520726624125354108150665
+
     # generate random mod, compute inv
     mod = 0
     while(mod%2==0):
       mod=random.randint(0,2**max_bits-1)
     #print("mod",mod)
-    inv = bigint.compute_minus_m_inv_mod_base(mod,base)
+    #inv = bigint.compute_minus_m_inv_mod_base(mod,base)
     #print("inv",inv)
+    # mod for bn curve
+    #mod = 0x2e67157159e5c639cf63e9cfb74492d9eb2022850278edf8ed84884a014afa37
+    # for secp256k1:
+    mod = 0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f
+    #inv = 0xc9bd1905155383999c46c2c295f2b761bcb223fedc24a059d838091dd2253531
+    #inv = 0xc9bd1905155383999c46c2c295f2b761bcb223fedc24a059d838091d0868192a
+
     # generate random a and b
-    a=mod
-    while(a>=mod):
-      a=random.randint(0,2**max_bits-1)
-    #print("a",a,"b",b)
-    # get expected output
-    expected = [0]
-    #bigint.montgomery_reduction(expected,[(a*a)%(2**max_bits),(a*a)//(2**max_bits)],[mod],[inv],2**max_bits,1)  # using montreduce, which must be tested separately
-    bigint.montgomery_square(expected,[a],[mod],[inv],2**max_bits,1)
+    a=random.randrange(0, mod)
+    b=random.randrange(0, mod)
+    # use wikipedia notation to compute (a*b) % mod
+    R = base; N=mod
+    Rprime = wikipedia_inverse(R,N)
+    Nprime = (R*Rprime-1)//N
+    assert R*Rprime - N*Nprime == 1     # Bézout's identity
+    aR = (a*R)%N
+    bR = (b*R)%N
+    T = aR*bR   # multiply first, then will reduce
+    outR = wikipedia_REDC(R,N,Nprime,T)
+    out = wikipedia_REDC(R,N,Nprime,outR)
+    assert out == (a*b)%N
     # print command
-    command = execname+" montsquare "+hex(a)+" "+hex(mod)+" "+hex(inv)+" "+hex(expected[0])+"\n"
+    command = execname+" montmul_noninterleaved "+hex(aR)+" "+hex(bR)+" "+hex(mod)+" "+hex(Nprime)+" "+hex(outR)+"\n"
+    #command = "python3 ../bigint.py montmul "+hex(aR)+" "+hex(bR)+" "+hex(mod)+" "+hex(Nprime)+" "+hex(outR)+"\n"
+    f.write(command)
+  f.close
+
+def generate_montsquare_tests(filename,execname,numtests,max_bits):  
+  print("generate_montsquare_tests(",filename,execname,numtests,max_bits,")")
+  f = open(filename, 'a')
+  base=2**max_bits
+  for i in range(numtests):
+    #print("i",i)
+    # generate random mod, compute inv
+    mod = 0
+    while(mod%2==0):
+      mod=random.randint(0,2**max_bits-1)
+    #print("mod",mod)
+    # mod from bn curve stuff
+    #mod = 0x2e67157159e5c639cf63e9cfb74492d9eb2022850278edf8ed84884a014afa37
+    # mod from secp256k1
+    mod = 0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f
+    # generate random a and b
+    a=random.randrange(0, mod)
+    # use wikipedia notation to compute (a*b) % mod
+    R = base; N=mod
+    Rprime = wikipedia_inverse(R,N)
+    Nprime = (R*Rprime-1)//N
+    assert R*Rprime - N*Nprime == 1     # Bézout's identity
+    aR = (a*R)%N
+    T = aR*aR   # multiply first, then will reduce
+    outR = wikipedia_REDC(R,N,Nprime,T)
+    out = wikipedia_REDC(R,N,Nprime,outR)
+    assert out == (a*a)%N
+    # print command
+    command = execname+" montsquare "+hex(aR)+" "+hex(mod)+" "+hex(Nprime)+" "+hex(outR)+"\n"
+    f.write(command)
+    #command = "python3 ../bigint.py montsquare "+hex(aR)+" "+hex(mod)+" "+hex(Nprime)+" "+hex(outR)+"\n"
+    #f.write(command)
+  f.close
+
+def generate_mulmod_oddmod_tests(filename,execname,numtests,max_bits):
+  print("generate_mulmod_oddmod_tests(",filename,execname,numtests,max_bits,")")
+  f = open(filename, 'a')
+  base=2**max_bits
+  for i in range(numtests):
+    #print("i",i)
+    # mod for bn curve
+    #mod=21888242871839275222246405745257275088696311157297823662689037894645226208583
+    # for secp256k1:
+    mod = 0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f
+    #inv = 0xc9bd1905155383999c46c2c295f2b761bcb223fedc24a059d838091dd2253531
+    #inv =  0xc9bd1905155383999c46c2c295f2b761bcb223fedc24a059d838091d0868192a
+
+    # generate random mod, compute inv
+    #mod = 0
+    #while(mod%2==0):
+    #  mod=random.randint(0,2**max_bits-1)
+    #print("mod",mod)
+    #inv = bigint.compute_minus_m_inv_mod_base(mod,base)
+    #print("inv",inv)
+
+    # generate random a and b
+    a=random.randrange(0, mod)
+    b=random.randrange(0, mod)
+    # use wikipedia notation to compute (a*b) % mod
+    R = base; N=mod
+    Rprime = wikipedia_inverse(R,N)
+    Nprime = (R*Rprime-1)//N
+    assert R*Rprime - N*Nprime == 1     # Bézout's identity
+    aR = (a*R)%N
+    bR = (b*R)%N
+    T = aR*bR   # multiply first, then will reduce
+    outR = wikipedia_REDC(R,N,Nprime,T)
+    out = wikipedia_REDC(R,N,Nprime,outR)
+    assert out == (a*b)%N
+    # print command
+    command = execname+" mulmod_oddmod "+hex(a)+" "+hex(b)+" "+hex(mod)+" "+hex(Nprime)+" "+hex(out)+"\n"
     f.write(command)
   f.close
 
@@ -252,8 +380,14 @@ if __name__ == "__main__":
       generate_montreduce_tests(filename,execname,numtests,max_bits)
     elif funcname=="montmul":
       generate_montmul_tests(filename,execname,numtests,max_bits)
+    elif funcname=="montmul_noninterleaved":
+      generate_montmul_noninterleaved_tests(filename,execname,numtests,max_bits)
+    elif funcname=="montmul":
+      generate_montmul_tests(filename,execname,numtests,max_bits)
     elif funcname=="montsquare":
       generate_montsquare_tests(filename,execname,numtests,max_bits)
+    elif funcname=="mulmod_oddmod":
+      generate_mulmod_oddmod_tests(filename,execname,numtests,max_bits)
     else:
       print("error: bad funcname:",funcname)
 

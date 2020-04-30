@@ -174,7 +174,7 @@ int main(int argc, char** argv){
             error=1;
           }
         }
-      if (!error){ printf("correct\n");}
+        if (!error){ printf("correct\n");}
       }
     }
     else if (strcmp (argv[1],"montmul") == 0){
@@ -200,7 +200,33 @@ int main(int argc, char** argv){
             error=1;
           }
         }
-      if (!error){ printf("correct\n");}
+        if (!error){ printf("correct\n");}
+      }
+    }
+    else if (strcmp (argv[1],"montmul_noninterleaved") == 0){
+      printf("testing montgomery multiplication noninterleaved\n");
+      if (argc!=7){
+        printf("./test_and_bench montmul_noninterleaved 0x<hex of x> 0x<hex of y> 0x<hex of mod> 0x<hex of modinv> 0x<hex of expected>\n");
+	return -1;
+      }
+
+      UINT x[NUM_LIMBS], y[NUM_LIMBS], m[NUM_LIMBS], inv[NUM_LIMBS], expected[NUM_LIMBS], out[NUM_LIMBS];
+      hexstr_to_bytearray((uint8_t*)x,argv[2]+2);
+      hexstr_to_bytearray((uint8_t*)y,argv[3]+2);
+      hexstr_to_bytearray((uint8_t*)m,argv[4]+2);
+      hexstr_to_bytearray((uint8_t*)inv,argv[5]+2);
+      hexstr_to_bytearray((uint8_t*)expected,argv[6]+2);
+      for (int i=0; i<NUM_ITERS; i++)
+        FUNCNAME(montmul_noninterleaved)(out,x,y,m,inv);
+      if (NUM_ITERS==1){
+        int error=0;
+        for (int i=0; i<NUM_LIMBS; i++){
+          if(out[i]!=expected[i]){
+            printf("ERROR: out[%d]=%lx and expected[%d]=%lx\n",i,out[i],i,expected[i]);
+            error=1;
+          }
+        }
+        if (!error){ printf("correct\n");}
       }
     }
     else if (strcmp (argv[1],"montsquare") == 0){
@@ -225,7 +251,34 @@ int main(int argc, char** argv){
             error=1;
           }
         }
-      if (!error){ printf("correct\n");}
+        if (!error){ printf("correct\n");}
+      }
+    }
+    else if (strcmp (argv[1],"mulmod_oddmod") == 0){
+      printf("testing mulmod_oddmod\n");
+      if (argc!=7){
+        printf("./test_and_bench mulmod_oddmod 0x<hex of x> 0x<hex of y> 0x<hex of mod> 0x<hex of modinv> 0x<hex of expected>\n");
+	return -1;
+      }
+
+      UINT x[NUM_LIMBS], y[NUM_LIMBS], m[NUM_LIMBS], inv[NUM_LIMBS], expected[NUM_LIMBS], out[NUM_LIMBS];
+      hexstr_to_bytearray((uint8_t*)x,argv[2]+2);
+      hexstr_to_bytearray((uint8_t*)y,argv[3]+2);
+      hexstr_to_bytearray((uint8_t*)m,argv[4]+2);
+      hexstr_to_bytearray((uint8_t*)inv,argv[5]+2);
+      hexstr_to_bytearray((uint8_t*)expected,argv[6]+2);
+      for (int i=0; i<NUM_ITERS; i++){
+        FUNCNAME(montmul)(out,x,y,m,inv);
+      }
+      if (NUM_ITERS==1){
+        int error=0;
+        for (int i=0; i<NUM_LIMBS; i++){
+          if(out[i]!=expected[i]){
+            printf("ERROR: out[%d]=%lx and expected[%d]=%lx\n",i,out[i],i,expected[i]);
+            error=1;
+          }
+        }
+        if (!error){ printf("correct\n");}
       }
     }
     else {
