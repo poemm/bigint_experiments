@@ -77,6 +77,12 @@ void FUNCNAME(add)(UINT* const out, const UINT* const x, const UINT* const y){
     carry = temp >> LIMB_BITS; 
     out[i] = (UINT)temp;
   }
+  // this had errors, keep for analysis now because above is slower
+  //for (int i=0; i<NUM_LIMBS;i++){
+  //  uint64_t temp = x[i]+y[i]+carry;
+  //  carry = x[i] > temp ? 1:0;
+  //  out[i]=temp;
+  //}
 }
 
 // compute x-y for x>=y
@@ -205,6 +211,21 @@ void FUNCNAME(addmod)(UINT* const out, const UINT* const x, const UINT* const y,
     carry = temp >> LIMB_BITS; 
     out[i] = (UINT)temp;
   }
+
+  if (carry){
+    FUNCNAME(subtract)(out, out, m);
+    return;
+  }
+
+  for (int i=NUM_LIMBS-1;i>=0;i--){
+    if (m[i]>out[i])
+      return;
+    else if (m[i]<out[i])
+      FUNCNAME(subtract)(out, out, m);
+      return;
+  }
+  return;
+
   if (carry || FUNCNAME(less_than_or_equal)(m,out)){
     FUNCNAME(subtract)(out, out, m);
   }
