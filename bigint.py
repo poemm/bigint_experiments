@@ -10,9 +10,9 @@ This python code is for prototyping and testing, it is much slower than bigint.h
 def add(out,x,y,base,num_limbs):
   carry=0
   for i in range(num_limbs):
-    temp = (x[i]+y[i]+carry)%base
-    carry = 1 if x[i]>=temp else 0
-    out[i]=carry
+    temp = (x[i]+y[i]+carry)%(base*base)
+    carry = temp // base
+    out[i] = temp % base
 
 # algorithm 14.9, Handbook of Applied Cryptography, http://cacr.uwaterloo.ca/hac/about/chap14.pdf
 # but algorithm 14.9 uses negative numbers, which we don't support, so we modify it, needs review
@@ -21,8 +21,8 @@ def subtract(out,x,y,base,num_limbs):
   carry=0
   for i in range(num_limbs):
     temp = (x[i]-carry)%base
-    out[i] = (temp-y[i])%base
     carry = 1 if temp<y[i] or x[i]<carry else 0
+    out[i] = (temp-y[i])%base
 
 
 # algorithm 14.12, Handbook of Applied Cryptography, http://cacr.uwaterloo.ca/hac/about/chap14.pdf
@@ -44,6 +44,19 @@ def mul(out,x,y,base,num_limbs):
       #print(w)
     w[i+num_limbs] = c
     #print(w)
+
+
+# algorithm 14.20, Handbook of Applied Cryptography, http://cacr.uwaterloo.ca/hac/about/chap14.pdf
+# but assume they both have the same number of limbs, this is naive
+def div(outq,outr,x,y,base,num_limbs):
+  q = [0]*num_limbs
+  one = [1]+[0]*(num_limbs-1)
+  while less_than_or_equal(y,x,num_limbs):
+    add(q,q,one,base,num_limbs)
+    subtract(x,x,y,base,num_limbs)
+  for i in range(num_limbs):
+    outr[i] = x[i]
+    outq[i] = q[i]
 
 
 # less-than operator <
@@ -230,6 +243,23 @@ def test_mont_reduce():
   #print([hex(e) for e in out])
   #print([hex(e) for e in expected])
 
+def test_div():
+  num_limbs = 9
+  base=10
+  x=int_to_digits(721948327, base)
+  y=int_to_digits(84461, base)
+  outq= [0]*num_limbs
+  outr= [0]*num_limbs
+  expected=int_to_digits(60160000008547,base) # r=60160, q=8547
+  x=x+([0]*(num_limbs-len(x)))
+  y=y+([0]*(num_limbs-len(y)))
+  expected=expected+([0]*(2*num_limbs-len(expected)))
+  div(outq,outr,x,y,base,num_limbs)
+  print(outq+outr == expected)
+
+                         
+  
+
 def test_mul():
   num_limbs=4
   base=10
@@ -387,6 +417,8 @@ if __name__ == "__main__":
     print(out==expected,out,expected)
     #print([hex(e) for e in out])
     #print([hex(e) for e in expected])
+  if sys.argv[1]=="div":
+    test_div()
   if sys.argv[1]=="montreduce":
     num_limbs=4
     base=2**64

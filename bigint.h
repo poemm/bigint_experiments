@@ -93,8 +93,8 @@ void FUNCNAME(subtract)(UINT* const out, const UINT* const x, const UINT* const 
   #pragma unroll
   for (int i=0; i<NUM_LIMBS; i++){
     UINT temp = x[i]-carry;
-    out[i] = temp-y[i];
     carry = (temp<y[i] || x[i]<carry) ? 1:0;
+    out[i] = temp-y[i];
 
     // casey's algorithm:
     //UINT out_temp = x[i]-y[i]-carry;
@@ -128,6 +128,26 @@ uint8_t FUNCNAME(less_than_or_equal)(const UINT* const x, const UINT* const y){
   }
   // they are equal
   return 1;
+}
+
+// algorithm 14.20, Handbook of Applied Cryptography, http://cacr.uwaterloo.ca/hac/about/chap14.pdf
+// but assume they both have the same number of limbs, this is naive
+void FUNCNAME(div)(UINT* const outq, UINT* const outr, const UINT* const x, const UINT* const y){
+  UINT q[NUM_LIMBS];
+  UINT one[NUM_LIMBS];
+  for (int i=0; i<NUM_LIMBS; i++){
+    q[i]=0;
+    one[i]=0;
+  }
+  one[0]=1;
+  while (FUNCNAME(less_than_or_equal)(y,x)){
+    FUNCNAME(add)(q,q,one);
+    FUNCNAME(subtract)(x,x,y);
+  }
+  for (int i=0; i<NUM_LIMBS; i++){
+    outr[i]=x[i];
+    outr[i]=q[i];
+  }
 }
 
 // algorithm 14.12, Handbook of Applied Cryptography, http://cacr.uwaterloo.ca/hac/about/chap14.pdf
