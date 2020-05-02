@@ -7,34 +7,36 @@ default: bench
 #compiler := gcc
 compiler := clang
 
-num_tests := 4
+num_tests := 10
 
 test:
 	# 256-bit tests
 	${compiler} test_and_bench.c -o test256_32 -w -DBIGINT_BITS=256 -DLIMB_BITS=32 -DLIMB_BITS_OVERFLOW=64 -DNUM_ITERS=1
 	${compiler} test_and_bench.c -o test256_64 -w -DBIGINT_BITS=256 -DLIMB_BITS=64 -DLIMB_BITS_OVERFLOW=128 -DNUM_ITERS=1
+	python3 generate_tests.py subtract 256 tests.sh ./test256_32 $(num_tests)
+	python3 generate_tests.py subtract 256 tests.sh ./test256_64 $(num_tests)
+	python3 generate_tests.py subtractmod 256 tests.sh ./test256_32 $(num_tests)
+	python3 generate_tests.py subtractmod 256 tests.sh ./test256_64 $(num_tests)
+	python3 generate_tests.py lessthan 256 tests.sh ./test256_32 $(num_tests)
+	python3 generate_tests.py lessthan 256 tests.sh ./test256_64 $(num_tests)
+	python3 generate_tests.py lessthanequal 256 tests.sh ./test256_32 $(num_tests)
+	python3 generate_tests.py lessthanequal 256 tests.sh ./test256_64 $(num_tests)
+	python3 generate_tests.py mul 256 tests.sh ./test256_32 $(num_tests)
+	python3 generate_tests.py mul 256 tests.sh ./test256_64 $(num_tests)
+	python3 generate_tests.py montmul 256 tests.sh ./test256_32 $(num_tests)
+	python3 generate_tests.py montmul 256 tests.sh ./test256_64 $(num_tests)
+	python3 generate_tests.py montmul_noninterleaved 256 tests.sh ./test256_32 $(num_tests)
+	python3 generate_tests.py montmul_noninterleaved 256 tests.sh ./test256_64 $(num_tests)
+	python3 generate_tests.py montsquare 256 tests.sh ./test256_32 $(num_tests)
+	python3 generate_tests.py montsquare 256 tests.sh ./test256_64 $(num_tests)
+	python3 generate_tests.py square 256 tests.sh ./test256_32 $(num_tests)
+	python3 generate_tests.py square 256 tests.sh ./test256_64 $(num_tests)
+	python3 generate_tests.py montreduce 256 tests.sh ./test256_32 $(num_tests)
+	python3 generate_tests.py montreduce 256 tests.sh ./test256_64 $(num_tests)
 	python3 generate_tests.py add 256 tests.sh ./test256_32 $(num_tests)
 	python3 generate_tests.py add 256 tests.sh ./test256_64 $(num_tests)
 	python3 generate_tests.py addmod 256 tests.sh ./test256_32 $(num_tests)
 	python3 generate_tests.py addmod 256 tests.sh ./test256_64 $(num_tests)
-	#python3 generate_tests.py subtract 256 tests.sh ./test256_32 $(num_tests)
-	#python3 generate_tests.py subtract 256 tests.sh ./test256_64 $(num_tests)
-	#python3 generate_tests.py lessthan 256 tests.sh ./test256_32 $(num_tests)
-	#python3 generate_tests.py lessthan 256 tests.sh ./test256_64 $(num_tests)
-	#python3 generate_tests.py lessthanequal 256 tests.sh ./test256_32 $(num_tests)
-	#python3 generate_tests.py lessthanequal 256 tests.sh ./test256_64 $(num_tests)
-	#python3 generate_tests.py mul 256 tests.sh ./test256_32 $(num_tests)
-	#python3 generate_tests.py mul 256 tests.sh ./test256_64 $(num_tests)
-	#python3 generate_tests.py montmul 256 tests.sh ./test256_32 $(num_tests)
-	#python3 generate_tests.py montmul 256 tests.sh ./test256_64 $(num_tests)
-	#python3 generate_tests.py montmul_noninterleaved 256 tests.sh ./test256_32 $(num_tests)
-	#python3 generate_tests.py montmul_noninterleaved 256 tests.sh ./test256_64 $(num_tests)
-	#python3 generate_tests.py montsquare 256 tests.sh ./test256_32 $(num_tests)
-	#python3 generate_tests.py montsquare 256 tests.sh ./test256_64 $(num_tests)
-	#python3 generate_tests.py square 256 tests.sh ./test256_32 $(num_tests)
-	#python3 generate_tests.py square 256 tests.sh ./test256_64 $(num_tests)
-	#python3 generate_tests.py montreduce 256 tests.sh ./test256_32 $(num_tests)
-	#python3 generate_tests.py montreduce 256 tests.sh ./test256_64 $(num_tests)
 	#python3 generate_tests.py mulmod_oddmod 256 tests.sh ./test256_32 $(num_tests)
 	#python3 generate_tests.py mulmod_oddmod 256 tests.sh ./test256_64 $(num_tests)
 	bash tests.sh

@@ -89,6 +89,32 @@ def generate_subtract_tests(filename,execname,numtests,max_bits):
     f.write(command)
   f.close
 
+def generate_subtractmod_tests(filename,execname,numtests,max_bits):  
+  f = open(filename, 'a')
+  for i in range(numtests):
+    # mod for bn curve
+    #mod = 0x2e67157159e5c639cf63e9cfb74492d9eb2022850278edf8ed84884a014afa37
+    # for secp256k1:
+    mod = 0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f
+    #inv = 0xc9bd1905155383999c46c2c295f2b761bcb223fedc24a059d838091dd2253531
+    #inv = 0xc9bd1905155383999c46c2c295f2b761bcb223fedc24a059d838091d0868192a
+
+    # generate random mod, compute inv
+    #mod = 0
+    #while(mod%2==0):
+    #  mod=random.randint(0,2**max_bits-1)
+    #print("mod",mod)
+    #inv = bigint.compute_minus_m_inv_mod_base(mod,base)
+    #print("inv",inv)
+
+    # generate random a and b
+    a=random.randrange(0, mod)
+    b=random.randrange(0, mod)
+    expected=(a-b)%mod
+    command = execname+" subtractmod "+hex(a)+" "+hex(b)+" "+hex(mod)+" "+hex(expected)+"\n"
+    f.write(command)
+  f.close
+
 def generate_less_than_tests(filename,execname,numtests,max_bits):  
   f = open(filename, 'a')
   for i in range(numtests):
@@ -133,26 +159,33 @@ def generate_montreduce_tests(filename,execname,numtests,max_bits):
   f = open(filename, 'a')
   base=2**max_bits
   for i in range(numtests):
-    #print("i",i)
     # mod for bn curve
-    mod = 0x2e67157159e5c639cf63e9cfb74492d9eb2022850278edf8ed84884a014afa37
+    #mod = 0x2e67157159e5c639cf63e9cfb74492d9eb2022850278edf8ed84884a014afa37
     # for secp256k1:
-    #mod = 0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f
+    mod = 0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f
+    #inv = 0xc9bd1905155383999c46c2c295f2b761bcb223fedc24a059d838091dd2253531
+    #inv = 0xc9bd1905155383999c46c2c295f2b761bcb223fedc24a059d838091d0868192a
+
     # generate random mod, compute inv
     #mod = 0
     #while(mod%2==0):
     #  mod=random.randint(0,2**max_bits-1)
     #print("mod",mod)
-    inv = bigint.compute_minus_m_inv_mod_base(mod,base)
+    #inv = bigint.compute_minus_m_inv_mod_base(mod,base)
     #print("inv",inv)
-    # generate random a
-    a=random.randint(0,2**(max_bits*2)-1)
-    #print("a",a,"b",b)
-    # get expected output
-    expected = [0]
-    bigint.montgomery_reduction(expected,[a%(2**max_bits),a//(2**max_bits)],[mod],[inv],2**max_bits,1)  # using montreduce, which must be tested separately
+
+    # generate random a and b
+    a=random.randrange(0, mod)
+    # use wikipedia notation to compute (a*b) % mod
+    R = base; N=mod
+    Rprime = wikipedia_inverse(R,N)
+    Nprime = (R*Rprime-1)//N
+    assert R*Rprime - N*Nprime == 1     # Bézout's identity
+    out = wikipedia_REDC(R,N,Nprime,a)
+
     # print command
-    command = execname+" montreduce "+hex(a)+" "+hex(mod)+" "+hex(inv)+" "+hex(expected[0])+"\n"
+    inv=Nprime
+    command = execname+" montreduce "+hex(a)+" "+hex(mod)+" "+hex(inv)+" "+hex(out)+"\n"
     f.write(command)
   f.close
 
@@ -397,6 +430,8 @@ if __name__ == "__main__":
       generate_addmod_tests(filename,execname,numtests,256)
     elif funcname=="subtract":
       generate_subtract_tests(filename,execname,numtests,max_bits)
+    elif funcname=="subtractmod":
+      generate_subtractmod_tests(filename,execname,numtests,max_bits)
     elif funcname=="lessthan":
       generate_less_than_tests(filename,execname,numtests,256)
     elif funcname=="lessthanequal":

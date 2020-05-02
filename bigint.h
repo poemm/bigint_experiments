@@ -36,17 +36,17 @@ And if you need other sizes, define them:
   #undef LIMB_BITS_OVERFLOW
 
 Now you can use functions like:
-  montmul256_64bitlimbs(x,y,m,inv,out);
-  subtract512_32bitlimbs(a,b,out);
+  montmul256_64bitlimbs(out,x,y,m,inv);
+  subtract512_32bitlimbs(out,a,b);
 
 Warning: LIMB_BITS corresponds to the uint*_t type, and multiplication requires double the bits, for example 64-bit limbs require type uint128_t, which may be unavailable on some targets like Wasm.
 */
 
 
-// Define constants used in this file:
+// Define macros used in this file:
 
 // define types UINT and UNT2, where UINT2 is for overflow of operations on UINT; for multiplication should be double the number of bits
-// UINT is the limb type, uint*_t where * is the number of bits per limb
+// UINT is the limb type, uint*_t where * is the number of bits per limb, eg uint32_t
 // UINT2 is also needed for multiplication UINTxUINT->UINT2, e.g. uint32_txuint32_t->uint64_t or uint64_txuint64_t->uint128_t
 #define TYPE_(num) uint##num##_t
 #define TYPE(num) TYPE_(num)
@@ -65,45 +65,38 @@ Warning: LIMB_BITS corresponds to the uint*_t type, and multiplication requires 
 #define FUNCNAME(name) FUNCNAME_(name,BIGINT_BITS,LIMB_BITS)
 
 
-// add two numbers modulo the precision of NUM_LIMBS limbs
+
+// add two numbers using two's complement for overflow, returning an overflow bit
 // algorithm 14.7, Handbook of Applied Cryptography, http://cacr.uwaterloo.ca/hac/about/chap14.pdf
 //   except we ignore the final carry in step 3 since we assume that there is no extra limb
-void FUNCNAME(add)(UINT* const out, const UINT* const x, const UINT* const y){
-  UINT carry=0;
-  #pragma unroll
-  for (int i=0; i<NUM_LIMBS;i++){
-    UINT2 temp = (UINT2)(x[i])+y[i]+carry;
-    carry = temp >> LIMB_BITS; 
-    out[i] = (UINT)temp;
-  }
-  // this had errors, keep for analysis now because above is slower
-  //for (int i=0; i<NUM_LIMBS;i++){
-  //  uint64_t temp = x[i]+y[i]+carry;
-  //  carry = x[i] > temp ? 1:0;
-  //  out[i]=temp;
-  //}
-}
-
-// compute x-y for x>=y
-// algorithm 14.9, Handbook of Applied Cryptography, http://cacr.uwaterloo.ca/hac/about/chap14.pdf
-// but algorithm 14.9 uses negative numbers, which we don't support, so we modify it, needs review
-void FUNCNAME(subtract)(UINT* const out, const UINT* const x, const UINT* const y){
-  UINT carry=0;
+UINT FUNCNAME(add)(UINT* const out, const UINT* const x, const UINT* const y){
+  UINT c=0;
   #pragma unroll
   for (int i=0; i<NUM_LIMBS; i++){
-    UINT temp = x[i]-carry;
-    carry = (temp<y[i] || x[i]<carry) ? 1:0;
-    out[i] = temp-y[i];
-
-    // casey's algorithm:
-    //UINT out_temp = x[i]-y[i]-carry;
-    //carry = (x[i]<y[i] || y[i]<carry) ? 1:0;
-    //out[i] = out_temp;
+    UINT temp = x[i]+c;
+    c = temp<c;
+    out[i] = temp+y[i];
+    c = (c || out[i]<temp) ? 1:0;
   }
+  return c;
 }
 
+// algorithm 14.9, Handbook of Applied Cryptography, http://cacr.uwaterloo.ca/hac/about/chap14.pdf
+// the book says it computes x-y for x>=y, but actually it computes the 2's complement for x<y
+// note: algorithm 14.9 allow adding c=-1, but we just subtract c=1 instead
+UINT FUNCNAME(subtract)(UINT* const out, const UINT* const x, const UINT* const y){
+  UINT c=0;
+  #pragma unroll
+  for (int i=0; i<NUM_LIMBS; i++){
+    UINT temp = x[i]-c;
+    c = (temp<y[i] || x[i]<c) ? 1:0;
+    out[i] = temp-y[i];
+  }
+  return c;
+}
+
+
 // checks whether x<y
-// TODO: reference spec of this algorithm
 uint8_t FUNCNAME(less_than)(const UINT* const x, const UINT* const y){
   for (int i=NUM_LIMBS-1;i>=0;i--){
     if (x[i]>y[i])
@@ -116,8 +109,6 @@ uint8_t FUNCNAME(less_than)(const UINT* const x, const UINT* const y){
 }
 
 // checks whether x<=y
-// NUM_LIMBS is number of limbs
-// TODO: reference spec of this algorithm
 uint8_t FUNCNAME(less_than_or_equal)(const UINT* const x, const UINT* const y){
   for (int i=NUM_LIMBS-1;i>=0;i--){
     if (x[i]>y[i])
@@ -129,8 +120,10 @@ uint8_t FUNCNAME(less_than_or_equal)(const UINT* const x, const UINT* const y){
   return 1;
 }
 
+
 // algorithm 14.20, Handbook of Applied Cryptography, http://cacr.uwaterloo.ca/hac/about/chap14.pdf
-// but assume they both have the same number of limbs, this is naive
+// but assume they both have the same number of limbs
+// this implementation is naive
 void FUNCNAME(div)(UINT* const outq, UINT* const outr, const UINT* const x, const UINT* const y){
   UINT q[NUM_LIMBS];
   UINT one[NUM_LIMBS];
@@ -153,10 +146,10 @@ void FUNCNAME(div)(UINT* const outq, UINT* const outr, const UINT* const x, cons
 
 // algorithm 14.12, Handbook of Applied Cryptography, http://cacr.uwaterloo.ca/hac/about/chap14.pdf
 // but assume they both have the same number of limbs, this can be changed
-// out should have double the limbs of inputs
+// out should have double the number of limbs as the inputs
 // num_limbs corresponds to n+1 in the book
 void FUNCNAME(mul)(UINT* const out, const UINT* const x, const UINT* const y){
-  UINT* w = out;
+  UINT w[NUM_LIMBS*2];
   for (int i=0; i<2*NUM_LIMBS; i++)
     w[i]=0;
   for (int i=0; i<NUM_LIMBS; i++){
@@ -171,8 +164,8 @@ void FUNCNAME(mul)(UINT* const out, const UINT* const x, const UINT* const y){
     }
     w[i+NUM_LIMBS] = c;
   }
-  //for (int i=0; i< 2*NUM_LIMBS; i++)
-  //  out[i]=w[i];
+  for (int i=0; i< 2*NUM_LIMBS; i++)
+    out[i]=w[i];
 }
 
 // algorithm 14.16, Handbook of Applied Cryptography, http://cacr.uwaterloo.ca/hac/about/chap14.pdf
@@ -232,46 +225,39 @@ void FUNCNAME(addmod)(UINT* const out, const UINT* const x, const UINT* const y,
     carry = temp >> LIMB_BITS; 
     out[i] = (UINT)temp;
   }
-
-  if (carry){
-    FUNCNAME(subtract)(out, out, m);
-    return;
-  }
-
-  for (int i=NUM_LIMBS-1;i>=0;i--){
-    if (m[i]>out[i])
-      return;
-    else if (m[i]<out[i])
-      FUNCNAME(subtract)(out, out, m);
-      return;
-  }
-  return;
-
+  // The above is simple add. The textbook Fact 14.27 says addmod requires extra step: subtract m iff x+y>=m
   if (carry || FUNCNAME(less_than_or_equal)(m,out)){
     FUNCNAME(subtract)(out, out, m);
   }
 }
 
-// compute x-y (mod m) for x>=y
-// algorithm 14.27, Handbook of Applied Cryptography, http://cacr.uwaterloo.ca/hac/about/chap14.pdf
+// compute x-y (mod m) for x,y < m
+// uses fact 14.27, Handbook of Applied Cryptography, http://cacr.uwaterloo.ca/hac/about/chap14.pdf
 void FUNCNAME(subtractmod)(UINT* const out, const UINT* const x, const UINT* const y, const UINT* const m){
-  (void)m;
-  // the book referenced says that this is the same as submod
-  FUNCNAME(subtract)(out, x, y);
+  UINT c = FUNCNAME(subtract)(out,x,y);
+  // if c, then x<y, so result is negative, need to get it's magnitude and subtract it from m 
+  if (c){
+    UINT zero[NUM_LIMBS];
+    for (int i=0;i<NUM_LIMBS;i++)
+      zero[i]=0;
+    FUNCNAME(subtract)(out, zero, out);		// get magnitude of negative number, based on note 14.10
+    FUNCNAME(subtract)(out, m, out);		// subtract magnitude from m
+  }
+  // note: we don't consider the case x-y>m. Because, for our crypto application, we assume x,y<m.
 }
 
+
+// returns (aR * bR) % m, where aR and bR are in Montgomery form
 // algorithm 14.32, Handbook of Applied Cryptography, http://cacr.uwaterloo.ca/hac/about/chap14.pdf
 // T has 2*NUM_LIMBS limbs, otherwise pad most significant bits with zeros
-void FUNCNAME(montreduce)(UINT* const out, UINT* const T, const UINT* const m, UINT const minv){
+void FUNCNAME(montreduce)(UINT* const out, UINT* const T, const UINT* const m, const UINT inv){
 
   UINT A[NUM_LIMBS*2+1];
   for (int i=0; i<2*NUM_LIMBS; i++)
     A[i] = T[i];
   A[NUM_LIMBS*2]=0;
-  //for (int i=NUM_LIMBS; i<2*NUM_LIMBS; i++)
-  //  A[i] = 0;
   for (int i=0; i<NUM_LIMBS; i++){
-    UINT ui = A[i]*minv;
+    UINT ui = A[i]*inv;
     UINT carry=0;
     int j;
     // add ui*m*b^i to A in a loop, since m is NUM_LIMBS long
@@ -283,7 +269,6 @@ void FUNCNAME(montreduce)(UINT* const out, UINT* const T, const UINT* const m, U
     // carry may be nonzero, so keep carrying
     int k=0;
     while (carry && i+j+k<2*NUM_LIMBS+1){
-      //printf("carry %d\n",i+j+k);
       UINT2 sum = (UINT2)(A[i+j+k])+carry;
       A[i+j+k] = (UINT)sum; // % b
       carry = sum >> LIMB_BITS; // / b
@@ -292,7 +277,6 @@ void FUNCNAME(montreduce)(UINT* const out, UINT* const T, const UINT* const m, U
   }
 
   // instead of right shift, we just get the correct values
-  //#pragma unroll
   for (int i=0; i<NUM_LIMBS; i++)
     out[i] = A[i+NUM_LIMBS];
 
@@ -304,7 +288,7 @@ void FUNCNAME(montreduce)(UINT* const out, UINT* const T, const UINT* const m, U
 
 // algorithm 14.16 followed by 14.32
 // this might be faster than algorithm 14.36, as described in remark 14.40
-void FUNCNAME(montsquare)(UINT* const out, const UINT* const x, const UINT* const m, UINT const inv){
+void FUNCNAME(montsquare)(UINT* const out, const UINT* const x, const UINT* const m, const UINT inv){
   UINT out_internal[NUM_LIMBS*2];
   FUNCNAME(square)(out_internal, x);
   FUNCNAME(montreduce)(out, out_internal, m, inv);
@@ -312,14 +296,14 @@ void FUNCNAME(montsquare)(UINT* const out, const UINT* const x, const UINT* cons
 
 // algorithm 14.12 followed by 14.32
 // this might be slower than algorithm 14.36, which interleaves these steps
-void FUNCNAME(montmul_noninterleaved)(UINT* const out, const UINT* const x, const UINT* const y, const UINT* const m, UINT const inv){
+void FUNCNAME(montmul_noninterleaved)(UINT* const out, const UINT* const x, const UINT* const y, const UINT* const m, const UINT inv){
   UINT out_internal[NUM_LIMBS*2];
   FUNCNAME(mul)(out_internal, x, y);
   FUNCNAME(montreduce)(out, out_internal, m, inv);
 }
 
 // algorithm 14.36, Handbook of Applied Cryptography, http://cacr.uwaterloo.ca/hac/about/chap14.pdf
-void FUNCNAME(montmul)(UINT* const out, const UINT* const x, const UINT* const y, const UINT* const m, UINT const inv){
+void FUNCNAME(montmul)(UINT* const out, const UINT* const x, const UINT* const y, const UINT* const m, const UINT inv){
   UINT A[NUM_LIMBS*2+1];
   for (int i=0;i<NUM_LIMBS*2+1;i++)
     A[i]=0;
@@ -342,11 +326,9 @@ void FUNCNAME(montmul)(UINT* const out, const UINT* const x, const UINT* const y
 	  // this is rare, need limb to be all 1's
           A[i+j+k]=0;
           k++;
-	  //printf("rare case 0!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
         }
         if (i+j+k<NUM_LIMBS*2+1){
           A[i+j+k]+=1;
-	  //printf("rare case 1 limb %d\n",i+j+k);
 	}
       }
       //printf("%d %d %llu %llu %llu %llu %llu %llu %llu %llu %llu\n",i,j,x[i],x[i]*y[0],ui,xiyj,uimj,partial_sum,sum,A[i+j],carry);
@@ -355,7 +337,6 @@ void FUNCNAME(montmul)(UINT* const out, const UINT* const x, const UINT* const y
   }
 
   // instead of right shift, we just get the correct values
-  //#pragma unroll
   for (int i=0; i<NUM_LIMBS;i++)
     out[i] = A[i+NUM_LIMBS];
 
