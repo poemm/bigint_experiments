@@ -215,20 +215,15 @@ void FUNCNAME(square)(UINT* const out, const UINT* const x){
 ////////////////////////
 
 
-// add two numbers modulo another number, a+b (mod m)
+// compute a+b (mod m), where x,y < m
 // algorithm 14.27, Handbook of Applied Cryptography, http://cacr.uwaterloo.ca/hac/about/chap14.pdf
 void FUNCNAME(addmod)(UINT* const out, const UINT* const x, const UINT* const y, const UINT* const m){
-  UINT carry=0;
-  #pragma unroll
-  for (int i=0; i<NUM_LIMBS;i++){
-    UINT2 temp = (UINT2)(x[i])+y[i]+carry;
-    carry = temp >> LIMB_BITS; 
-    out[i] = (UINT)temp;
-  }
-  // The above is simple add. The textbook Fact 14.27 says addmod requires extra step: subtract m iff x+y>=m
+  UINT carry = FUNCNAME(add)(out,x,y);
+  // In textbook 14.27, says addmod is add and an extra step: subtract m iff x+y>=m
   if (carry || FUNCNAME(less_than_or_equal)(m,out)){
     FUNCNAME(subtract)(out, out, m);
   }
+  // note: we don't consider the case x+y-m>m. Because, for our crypto application, we assume x,y<m.
 }
 
 // compute x-y (mod m) for x,y < m
