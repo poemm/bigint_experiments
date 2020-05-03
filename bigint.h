@@ -128,19 +128,22 @@ void FUNCNAME(div)(UINT* const outq, UINT* const outr, const UINT* const x, cons
   UINT q[NUM_LIMBS];
   UINT one[NUM_LIMBS];
   UINT x_[NUM_LIMBS];
+  // init stuff
   for (int i=0; i<NUM_LIMBS; i++){
     q[i]=0;
     one[i]=0;
     x_[i]=x[i];
   }
   one[0]=1;
+  // naive loop, described in textbook
   while (FUNCNAME(less_than_or_equal)(y,x_)){
     FUNCNAME(add)(q,q,one);
     FUNCNAME(subtract)(x_,x_,y);
   }
+  // output
   for (int i=0; i<NUM_LIMBS; i++){
     outr[i]=x_[i];
-    outr[i]=q[i];
+    outq[i]=q[i];
   }
 }
 
