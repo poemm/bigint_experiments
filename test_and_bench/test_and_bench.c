@@ -176,6 +176,34 @@ int main(int argc, char** argv){
         if (!error){ printf("correct\n");}
       }
     }
+    else if (strcmp (argv[1],"div") == 0){
+      printf("testing div\n");
+      if (argc!=6){
+        printf("./test_and_bench div 0x<hex of x> 0x<hex of y> 0x<hex of expected>\n");
+	return -1;
+      }
+      UINT x[NUM_LIMBS], y[NUM_LIMBS], outr_expected[NUM_LIMBS], outq_expected[NUM_LIMBS], outr[NUM_LIMBS], outq[NUM_LIMBS];
+      hexstr_to_bytearray((uint8_t*)x,argv[2]+2);
+      hexstr_to_bytearray((uint8_t*)y,argv[3]+2);
+      hexstr_to_bytearray((uint8_t*)outq_expected,argv[4]+2);
+      hexstr_to_bytearray((uint8_t*)outr_expected,argv[5]+2);
+      for (int i=0; i<NUM_ITERS; i++)
+        FUNCNAME(div)(outq,outr,x,y);
+      if (NUM_ITERS==1){
+        int error=0;
+        for (int i=0; i<NUM_LIMBS; i++){
+          if(outq[i]!=outq_expected[i]){
+            printf("ERROR: outq[%d]=%lx and outq_expected[%d]=%lx\n",i,outq[i],i,outq_expected[i]);
+            error=1;
+          }
+          if(outr[i]!=outr_expected[i]){
+            printf("ERROR: outr[%d]=%lx and outr_expected[%d]=%lx\n",i,outr[i],i,outr_expected[i]);
+            error=1;
+          }
+        }
+        if (!error){ printf("correct\n");}
+      }
+    }
     else if (strcmp (argv[1],"square") == 0){
       printf("testing square\n");
       if (argc!=4){

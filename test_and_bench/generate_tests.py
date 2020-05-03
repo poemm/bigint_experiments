@@ -145,6 +145,17 @@ def generate_mul_tests(filename,execname,numtests,max_bits):
     f.write(command)
   f.close
 
+def generate_div_tests(filename,execname,numtests,max_bits):
+  f = open(filename, 'a')
+  for i in range(numtests):
+    a=random.randint(0,2**max_bits-1)
+    b=random.randint(0,2**max_bits-1)
+    outq = a//b
+    outr = a%b
+    command = execname+" div "+hex(a)+" "+hex(b)+" "+"{0:#0{1}x}".format(outq,max_bits//4)+" "+"{0:#0{1}x}".format(outr,max_bits//4)+"\n"
+    f.write(command)
+  f.close
+
 def generate_square_tests(filename,execname,numtests,max_bits):
   f = open(filename, 'a')
   for i in range(numtests):
@@ -438,6 +449,8 @@ if __name__ == "__main__":
       generate_less_than_or_equal_tests(filename,execname,numtests,256)
     elif funcname=="mul":
       generate_mul_tests(filename,execname,numtests,max_bits)
+    elif funcname=="div":
+      generate_div_tests(filename,execname,numtests,max_bits)
     elif funcname=="square":
       generate_square_tests(filename,execname,numtests,max_bits)
     elif funcname=="montreduce":

@@ -418,7 +418,27 @@ if __name__ == "__main__":
     #print([hex(e) for e in out])
     #print([hex(e) for e in expected])
   if sys.argv[1]=="div":
-    test_div()
+    num_limbs=4
+    base=2**64
+    outr=[0]*num_limbs
+    outq=[0]*num_limbs
+    # parse args
+    x=int_to_digits(int(sys.argv[2],16),base)
+    m=int_to_digits(int(sys.argv[3],16),base)
+    outr_expected=int_to_digits(int(sys.argv[4],16),base)
+    outq_expected=int_to_digits(int(sys.argv[5],16),base)
+    # make sure args have the right size
+    x=x+([0]*(num_limbs-len(x)))
+    m=m+([0]*(num_limbs-len(m)))
+    outr=outq+([0]*(num_limbs-len(outq)))
+    outr=outr+([0]*(num_limbs-len(outr)))
+    outq_expected=outq_expected+([0]*(num_limbs-len(outq_expected)))
+    outr_expected=outr_expected+([0]*(num_limbs-len(outr_expected)))
+    #print(x,y,m,inv,expected)
+    # perform operation
+    div(outr,outq,x,y)
+    print(outr==outr_expected,[hex(o) for o in outr],[hex(e) for e in outr_expected])
+    print(outq==outq_expected,[hex(o) for o in outq],[hex(e) for e in outq_expected])
   if sys.argv[1]=="montreduce":
     num_limbs=4
     base=2**64
