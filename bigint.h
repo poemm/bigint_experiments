@@ -1,3 +1,5 @@
+#ifndef BIGINT_H
+#define BIGINT_H
 
 #if !WASM
 #include <stdint.h>
@@ -121,14 +123,68 @@ uint8_t FUNCNAME(less_than_or_equal)(const UINT* const x, const UINT* const y){
 }
 
 
+// computes quotient x/y and remainder x%y
 // algorithm 14.20, Handbook of Applied Cryptography, http://cacr.uwaterloo.ca/hac/about/chap14.pdf
-// but assume they both have the same number of limbs
-// this implementation is naive
+// it works, but the implementation is naive, see notes
 void FUNCNAME(div)(UINT* const outq, UINT* const outr, const UINT* const x, const UINT* const y){
-  UINT q[NUM_LIMBS];
+
+  /*
+  // book has n and t, we compute these
+  int n = 0;  // idx of first significant("nonzero") limbs of x
+  int t = 0;  // n minus the idx of first significant limb of y
+  for (int i=NUM_LIMBS-1;i>=0;i--){
+    if (x[i] != 0){
+      n=i+1;
+      break;
+    }
+  }
+  for (int i=n;i>=0;i--){
+    if (y[i] != 0){
+      t = n-i;
+    }
+  }
+
+  // step 1 in book
+  for (int j=0;j<n-t;j++)
+    outq[j]=0;
+
+  // step 2 in book
+  // TODO 
+  */
+
+
+  // not in the textbook
+  // special case for y==1, this hack is needed for now
+  int x_num_significant_limbs = 0;
+  int y_num_significant_limbs = 0;
+  for (int i=5;i>=0;i--){
+    if (x[i] != 0){
+      x_num_significant_limbs=i+1;
+      break;
+    }
+  }
+  for (int i=5;i>=0;i--){
+    if (y[i] != 0){
+      y_num_significant_limbs=i+1;
+      break;
+    }
+  }
+  if(y_num_significant_limbs == 1 && y[0] == 1){
+    for (int i=0;i<6;i++){
+      outr[i]=0;
+      outq[i]=x[i];
+    }
+    //printf("bignum_int_div() returning special case\n");
+    return;
+  }
+
+
+  // THIS IS A NAIVE IMPLEMENTATION OF WHAT IS IN THE BOOK
+  // NAIVIELY ASSUMING THAT ALL LIMBS SIGNIFICANT AND OMITTING OPTIMIZATIONS
+  // init stuff
   UINT one[NUM_LIMBS];
   UINT x_[NUM_LIMBS];
-  // init stuff
+  UINT q[NUM_LIMBS];
   for (int i=0; i<NUM_LIMBS; i++){
     q[i]=0;
     one[i]=0;
@@ -248,7 +304,7 @@ void FUNCNAME(subtractmod)(UINT* const out, const UINT* const x, const UINT* con
 // returns (aR * bR) % m, where aR and bR are in Montgomery form
 // algorithm 14.32, Handbook of Applied Cryptography, http://cacr.uwaterloo.ca/hac/about/chap14.pdf
 // T has 2*NUM_LIMBS limbs, otherwise pad most significant bits with zeros
-void FUNCNAME(montreduce)(UINT* const out, UINT* const T, const UINT* const m, const UINT inv){
+void FUNCNAME(montreduce)(UINT* const out, const UINT* const T, const UINT* const m, const UINT inv){
 
   UINT A[NUM_LIMBS*2+1];
   for (int i=0; i<2*NUM_LIMBS; i++)
@@ -350,3 +406,4 @@ void FUNCNAME(montmul_3args_)(UINT* const out, const UINT* const x, const UINT* 
   FUNCNAME(montmul)(out, x, y, m, inv);
 }
 
+#endif

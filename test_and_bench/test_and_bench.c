@@ -179,7 +179,7 @@ int main(int argc, char** argv){
     else if (strcmp (argv[1],"div") == 0){
       printf("testing div\n");
       if (argc!=6){
-        printf("./test_and_bench div 0x<hex of x> 0x<hex of y> 0x<hex of expected>\n");
+        printf("./test_and_bench div 0x<hex of x> 0x<hex of y> 0x<hex of expected quotient> 0x<hex of expected remainder>\n");
 	return -1;
       }
       UINT x[NUM_LIMBS], y[NUM_LIMBS], outr_expected[NUM_LIMBS], outq_expected[NUM_LIMBS], outr[NUM_LIMBS], outq[NUM_LIMBS];
