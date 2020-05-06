@@ -76,9 +76,8 @@ UINT FUNCNAME(add)(UINT* const out, const UINT* const x, const UINT* const y){
   #pragma unroll
   for (int i=0; i<NUM_LIMBS; i++){
     UINT temp = x[i]+c;
-    c = temp<c;
     out[i] = temp+y[i];
-    c = (c || out[i]<temp) ? 1:0;
+    c = (temp<c || out[i]<temp) ? 1:0;
   }
   return c;
 }
