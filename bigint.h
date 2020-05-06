@@ -178,6 +178,9 @@ void FUNCNAME(div)(UINT* const q, UINT* const r, const UINT* const x, const UINT
     q[n-t]+=1;
     FUNCNAME(subtract(x_,x,y_n_t));
   }
+
+  // step 3 in book
+  // TODO
   */
 
 
@@ -307,11 +310,7 @@ void FUNCNAME(subtractmod)(UINT* const out, const UINT* const x, const UINT* con
   UINT c = FUNCNAME(subtract)(out,x,y);
   // if c, then x<y, so result is negative, need to get it's magnitude and subtract it from m 
   if (c){
-    UINT zero[NUM_LIMBS];
-    for (int i=0;i<NUM_LIMBS;i++)
-      zero[i]=0;
-    FUNCNAME(subtract)(out, zero, out);		// get magnitude of negative number, based on note 14.10
-    FUNCNAME(subtract)(out, m, out);		// subtract magnitude from m
+    FUNCNAME(add)(out, m, out);		// add m to overflow back
   }
   // note: we don't consider the case x-y>m. Because, for our crypto application, we assume x,y<m.
 }
