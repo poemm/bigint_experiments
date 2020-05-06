@@ -126,81 +126,98 @@ uint8_t FUNCNAME(less_than_or_equal)(const UINT* const x, const UINT* const y){
 // computes quotient x/y and remainder x%y
 // algorithm 14.20, Handbook of Applied Cryptography, http://cacr.uwaterloo.ca/hac/about/chap14.pdf
 // it works, but the implementation is naive, see notes
-void FUNCNAME(div)(UINT* const outq, UINT* const outr, const UINT* const x, const UINT* const y){
+// y = q*x + r
+void FUNCNAME(div)(UINT* const q, UINT* const r, const UINT* const x, const UINT* const y){
 
-  /*
-  // book has n and t, we compute these
+  for (int i=0; i<NUM_LIMBS; i++){
+    q[i]=0;
+  }
+
+  // book has n and t given, we compute these
   int n = 0;  // idx of first significant("nonzero") limbs of x
   int t = 0;  // n minus the idx of first significant limb of y
   for (int i=NUM_LIMBS-1;i>=0;i--){
-    if (x[i] != 0){
-      n=i+1;
-      break;
-    }
+    if (x[i] != 0) { n=i; break; }
   }
   for (int i=n;i>=0;i--){
-    if (y[i] != 0){
-      t = n-i;
-    }
+    if (y[i] != 0) { t=n-i; break; }
   }
-
-  // step 1 in book
-  for (int j=0;j<n-t;j++)
-    outq[j]=0;
-
-  // step 2 in book
-  // TODO 
-  */
-
 
   // not in the textbook
-  // special case for y==1, this hack is needed for now
-  int x_num_significant_limbs = 0;
-  int y_num_significant_limbs = 0;
-  for (int i=5;i>=0;i--){
-    if (x[i] != 0){
-      x_num_significant_limbs=i+1;
-      break;
+  // special case for y=1, this hack is needed for now
+  if( n-t==0 && y[0]==1 ){
+    for (int i=0;i<NUM_LIMBS;i++){
+      r[i]=0;
+      q[i]=x[i];
     }
-  }
-  for (int i=5;i>=0;i--){
-    if (y[i] != 0){
-      y_num_significant_limbs=i+1;
-      break;
-    }
-  }
-  if(y_num_significant_limbs == 1 && y[0] == 1){
-    for (int i=0;i<6;i++){
-      outr[i]=0;
-      outq[i]=x[i];
-    }
-    //printf("bignum_int_div() returning special case\n");
     return;
   }
 
-
-  // THIS IS A NAIVE IMPLEMENTATION OF WHAT IS IN THE BOOK
-  // NAIVIELY ASSUMING THAT ALL LIMBS SIGNIFICANT AND OMITTING OPTIMIZATIONS
-  // init stuff
-  UINT one[NUM_LIMBS];
-  UINT x_[NUM_LIMBS];
-  UINT q[NUM_LIMBS];
+  // save input x from getting clobbered below
+  // note that x_ it will end up as remainder
+  UINT *x_ = r;
   for (int i=0; i<NUM_LIMBS; i++){
-    q[i]=0;
-    one[i]=0;
     x_[i]=x[i];
   }
-  one[0]=1;
-  // naive loop, described in textbook
-  while (FUNCNAME(less_than_or_equal)(y,x_)){
-    FUNCNAME(add)(q,q,one);
-    FUNCNAME(subtract)(x_,x_,y);
+
+  /* WIP
+  // step 1 in book
+  for (int j=0;j<n-t;j++)
+    q[i]=0;
+
+  // step 2 in book
+  // first get y*b^{n-t} by shifting y up by n-t limbs
+  UINT y_n_t[NUM_LIMBS];
+  for (int i=NUM_LIMBS;i>t;i--)
+    y_n_t[i] = 0;
+  for (int i=t;i>n-t;i--)
+    y_n_t[i] = y[i+n-t];
+  for (int i=n-t;i>=0;i--)
+    y_n_t[i] = 0;
+  // now the while subtract loop
+  while (FUNCNAME(less_than_or_equal)(y_n_t,x)){
+    q[n-t]+=1;
+    FUNCNAME(subtract(x_,x,y_n_t));
   }
-  // output
-  for (int i=0; i<NUM_LIMBS; i++){
-    outr[i]=x_[i];
-    outq[i]=q[i];
+  */
+
+
+
+  // THIS IS A NAIVE IMPLEMENTATION OF WHAT IS IN THE BOOK
+  // naive loop: while( y<x_ ) { q++; x_=x_-y }
+
+  // leq = (y<x_)
+  UINT leq = 1;
+  for (int i=n;i>=0;i--){
+    if (y[i]>x_[i]){ leq = 0; break;}
+    else if (y[i]<x_[i]){ leq = 1; break;}
   }
+
+  while (leq){
+
+    // q = q + 1
+    for(int i=0;i<=n;i++){
+      q[i]+=1;
+      if(q[i]!=0)
+	break;
+    }
+
+    // x_ = x_ - y
+    UINT c=0;
+    for (int i=0; i<=n; i++){
+      UINT temp = x_[i]-c;
+      c = (temp<y[i] || x_[i]<c) ? 1:0;
+      x_[i] = temp-y[i];
+    }
+
+    // leq = (y<x_)
+    for (int i=n;i>=0;i--){
+      if (y[i]>x_[i]){ leq = 0; break;}
+      else if (y[i]<x_[i]){ leq = 1; break;}
+    }
+
+  }
+
 }
 
 // algorithm 14.12, Handbook of Applied Cryptography, http://cacr.uwaterloo.ca/hac/about/chap14.pdf
