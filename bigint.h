@@ -414,6 +414,52 @@ void FUNCNAME(montmul)(UINT* const out, const UINT* const x, const UINT* const y
       FUNCNAME(subtract)(out, out, m);
 }
 
+
+// The CIOS method for montgomery multiplication, copied from (but using notation of above montmul) Çetin K. Koç; Tolga Acar; Burton S. Kaliski, Jr. (June 1996). "Analyzing and Comparing Montgomery Multiplication Algorithms". IEEE Micro. 16 (3): 26–33.
+void FUNCNAME(montmulCIOS)(UINT* const out, const UINT* const x, const UINT* const y, const UINT* const m, const UINT inv){
+  UINT A[NUM_LIMBS+2];
+  for (int i=0;i<NUM_LIMBS+2;i++)
+    A[i]=0;
+  //#pragma unroll	// this unroll increases binary size by a lot
+  for (int i=0; i<NUM_LIMBS; i++){
+    //UINT ui = (A[i]+x[i]*y[0])*inv;
+    UINT carry = 0;
+    UINT2 sum = 0;
+    #pragma unroll
+    for (int j=0; j<NUM_LIMBS; j++){
+      sum = (UINT2)A[j] + (UINT2)x[i]*y[j] + carry;
+      carry = sum>>LIMB_BITS;
+      A[j] = (UINT)sum;
+    }
+    sum = (UINT2)(A[NUM_LIMBS]) + carry;
+    carry = sum>>LIMB_BITS;
+    A[NUM_LIMBS] = (UINT) sum;
+    A[NUM_LIMBS+1] = carry;
+    UINT A0inv = A[0]*inv;
+    sum = (UINT2)(A[0]) + (UINT2)A0inv*m[0];
+    carry = sum>>LIMB_BITS;
+    #pragma unroll
+    for (int j=1; j<NUM_LIMBS; j++){
+      sum = (UINT2)(A[j]) + (UINT2)A0inv*m[j] + carry;
+      carry = sum>>LIMB_BITS;
+      A[j-1] = (UINT)sum;
+    }
+    sum = (UINT2)(A[NUM_LIMBS])+carry;
+    carry = sum>>LIMB_BITS;
+    A[NUM_LIMBS-1]=(UINT)sum;
+    A[NUM_LIMBS]=A[NUM_LIMBS+1]+carry;
+  }
+
+  // copy to out
+  for (int i=0; i<NUM_LIMBS;i++)
+    out[i] = A[i];
+
+  // final subtraction, first see if necessary
+  if (A[NUM_LIMBS]>0 || FUNCNAME(less_than_or_equal)(m,out))
+      FUNCNAME(subtract)(out, out, m);
+}
+
+
 // like montmul, but with two of the args hard-coded
 void FUNCNAME(montmul_3args_)(UINT* const out, const UINT* const x, const UINT* const y){
   UINT* m = (UINT*)4444444;    // hard-code m or address to m here
