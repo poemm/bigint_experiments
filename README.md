@@ -23,7 +23,7 @@ See comments in `bigint.h` and `bigint.py`. But here is a quick demo:
 #define LIMB_BITS_OVERFLOW 64
 #include "bigint.h"
 
-montmul256_32bitlimbs(out,x,y,m,inv);
+mulmodmont256_32bitlimbs(out,x,y,m,inv);
 ```
 
 To apply preprocessor macros and get code for a specific number of bits and limb size:

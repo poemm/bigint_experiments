@@ -16,8 +16,8 @@ def add(out,x,y,base,num_limbs):
 
 # algorithm 14.9, Handbook of Applied Cryptography, http://cacr.uwaterloo.ca/hac/about/chap14.pdf
 # but algorithm 14.9 uses negative numbers, which we don't support, so we modify it, needs review
-# subtract x-y for x>=y
-def subtract(out,x,y,base,num_limbs):
+# sub x-y for x>=y
+def sub(out,x,y,base,num_limbs):
   carry=0
   for i in range(num_limbs):
     temp = (x[i]-carry)%base
@@ -53,7 +53,7 @@ def div(outq,outr,x,y,base,num_limbs):
   one = [1]+[0]*(num_limbs-1)
   while less_than_or_equal(y,x,num_limbs):
     add(q,q,one,base,num_limbs)
-    subtract(x,x,y,base,num_limbs)
+    sub(x,x,y,base,num_limbs)
   for i in range(num_limbs):
     outr[i] = x[i]
     outq[i] = q[i]
@@ -106,13 +106,13 @@ def square(out,x,b,t):
 def addmod(out,x,y,m,base,num_limbs):
   add(out,x,y,base,num_limbs)
   if less_than_or_equal(m,out,num_limbs):
-    subtract(out,m,out,base,num_limbs)
+    sub(out,m,out,base,num_limbs)
 
 # compute x-y (mod m) for x>=y
 # algorithm 14.27, Handbook of Applied Cryptography, http://cacr.uwaterloo.ca/hac/about/chap14.pdf
-def subtractmod(out,x,y,m,base,num_limbs):
+def submod(out,x,y,m,base,num_limbs):
   #  the book referenced says that this is the same as submod
-  subtract(out,x,y,base,num_limbs)
+  sub(out,x,y,base,num_limbs)
 
 # algorithm 14.32, Handbook of Applied Cryptography, http://cacr.uwaterloo.ca/hac/about/chap14.pdf
 def montgomery_reduction(out,T,m,minv,b,n):
@@ -141,7 +141,7 @@ def montgomery_reduction(out,T,m,minv,b,n):
   #print("out before final sub:",[hex(o) for o in out])
   # possible final subtraction
   if less_than_or_equal(m,out,n):
-    subtract(out,out,m,b,n)
+    sub(out,out,m,b,n)
 
 
 # algorithm 14.36, Handbook of Applied Cryptography, http://cacr.uwaterloo.ca/hac/about/chap14.pdf
@@ -173,7 +173,7 @@ def montgomery_multiplication(out,x,y,m,minv,b,n):
     out[i]=A[i+n]
   # possible final subtraction
   if A[2*n]>0 or less_than_or_equal(m,out,n):
-    subtract(out,out,m,b,n)
+    sub(out,out,m,b,n)
 
 
 # algorithm 14.16 followed by 14.32
@@ -296,7 +296,7 @@ def test_square():
   #print([hex(e) for e in out])
   #print([hex(e) for e in expected])
 
-def test_subtract():
+def test_sub():
   num_limbs=5
   base=10
   out_=[0]*num_limbs
@@ -314,7 +314,7 @@ def test_subtract():
   b_=b_+([0]*(num_limbs-len(b_)))
   expected_=expected_+([0]*(num_limbs-len(expected_)))
   # perform operation
-  subtract(out_,a_,b_,base,num_limbs)
+  sub(out_,a_,b_,base,num_limbs)
   flag = out_ == expected_
   print(out_ == expected_)
   #if out_ != expected_:
@@ -323,7 +323,7 @@ def test_subtract():
   print(out_)
   print(expected_)
 
-def test_montmul():
+def test_mulmodmont():
   # test from referenced book
   num_limbs=5
   base=10
@@ -350,17 +350,17 @@ def test_montmul():
 
 if __name__ == "__main__":
   # this just tests montgomery multiplication for now
-  # use like this: python3 bigint.py montmul 0x5bf1157a72e0c409a169d2f0d036bcb9f9090b25c25b27d090c2d9e9bc21f4da 0xd9dc1c4c37ce4b73d08901b7b771bcf905f78da0df88858f115bcc6dc24de3e4 0x30644e72e131a029b85045b68181585d97816a916871ca8d3c208c16d87cfd47 0x2ddccb3fa965bcb892d206fbf462e21f9ede7d651eca6ac987d20782e4866389 0x275614dc5a747e3e5e9e4b286d5e4ba1c41b8afd1cb65e567b13f64a160a48ed
+  # use like this: python3 bigint.py mulmodmont 0x5bf1157a72e0c409a169d2f0d036bcb9f9090b25c25b27d090c2d9e9bc21f4da 0xd9dc1c4c37ce4b73d08901b7b771bcf905f78da0df88858f115bcc6dc24de3e4 0x30644e72e131a029b85045b68181585d97816a916871ca8d3c208c16d87cfd47 0x2ddccb3fa965bcb892d206fbf462e21f9ede7d651eca6ac987d20782e4866389 0x275614dc5a747e3e5e9e4b286d5e4ba1c41b8afd1cb65e567b13f64a160a48ed
 
   #test_mul()
-  #test_montmul()
+  #test_mulmodmont()
   #test_mont_reduce()
   import sys
   # consts and preallocated output
   if len(sys.argv)<2:
     print("first arg is test name")
     exit()
-  if sys.argv[1]=="montmul":
+  if sys.argv[1]=="mulmodmont":
     num_limbs=8
     base=2**32
     out=[0]*num_limbs

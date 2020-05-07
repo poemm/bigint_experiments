@@ -3,6 +3,8 @@
 #include "utils.h"
 #include "../bigint.h"
 
+#include <time.h>
+
 
 
 
@@ -46,8 +48,17 @@ int main(int argc, char** argv){
       hexstr_to_bytearray((uint8_t*)y,argv[3]+2);
       hexstr_to_bytearray((uint8_t*)mod,argv[4]+2);
       hexstr_to_bytearray((uint8_t*)expected,argv[5]+2);
-      for (int i=0; i<NUM_ITERS; i++)
+      struct timespec requestStart, requestEnd;
+      clock_gettime(CLOCK_REALTIME, &requestStart);
+      for (int i=0; i<NUM_ITERS; i++){
         FUNCNAME(addmod)(out,x,y,mod);
+	//x[i%NUM_LIMBS] = out[NUM_LIMBS-1];
+      }
+      clock_gettime(CLOCK_REALTIME, &requestEnd);
+      double accum = ( requestEnd.tv_sec - requestStart.tv_sec )
+                 + ( requestEnd.tv_nsec - requestStart.tv_nsec )
+                 / 1E9;
+      if (NUM_ITERS>1) printf( "execution time: %lf\n", accum );
       if (NUM_ITERS==1){
         int error=0;
         for (int i=0; i<NUM_LIMBS; i++){
@@ -59,10 +70,10 @@ int main(int argc, char** argv){
         if (!error){ printf("correct\n");}
       }
     }
-    else if (strcmp (argv[1],"subtract") == 0){
-      printf("testing subtract\n");
+    else if (strcmp (argv[1],"sub") == 0){
+      printf("testing sub\n");
       if (argc!=5){
-        printf("./test_and_bench subtract 0x<hex of x> 0x<hex of y> 0x<hex of expected>\n");
+        printf("./test_and_bench sub 0x<hex of x> 0x<hex of y> 0x<hex of expected>\n");
 	return -1;
       }
 
@@ -71,7 +82,7 @@ int main(int argc, char** argv){
       hexstr_to_bytearray((uint8_t*)y,argv[3]+2);
       hexstr_to_bytearray((uint8_t*)expected,argv[4]+2);
       for (int i=0; i<NUM_ITERS; i++)
-        FUNCNAME(subtract)(out,x,y);
+        FUNCNAME(sub)(out,x,y);
       if (NUM_ITERS==1){
         int error=0;
         for (int i=0; i<NUM_LIMBS; i++){
@@ -83,10 +94,10 @@ int main(int argc, char** argv){
         if (!error){ printf("correct\n");}
       }
     }
-    else if (strcmp(argv[1],"subtractmod") == 0){
-      printf("testing subtractmod\n");
+    else if (strcmp(argv[1],"submod") == 0){
+      printf("testing submod\n");
       if (argc!=6){
-        printf("./test_and_bench subtractmod 0x<hex of x> 0x<hex of y> 0x<hex of expected>\n");
+        printf("./test_and_bench submod 0x<hex of x> 0x<hex of y> 0x<hex of expected>\n");
 	return -1;
       }
 
@@ -96,7 +107,7 @@ int main(int argc, char** argv){
       hexstr_to_bytearray((uint8_t*)mod,argv[4]+2);
       hexstr_to_bytearray((uint8_t*)expected,argv[5]+2);
       for (int i=0; i<NUM_ITERS; i++)
-        FUNCNAME(subtractmod)(out,x,y,mod);
+        FUNCNAME(submod)(out,x,y,mod);
       if (NUM_ITERS==1){
         int error=0;
         for (int i=0; i<NUM_LIMBS; i++){
@@ -111,7 +122,7 @@ int main(int argc, char** argv){
     else if (strcmp (argv[1],"lessthan") == 0){
       printf("testing less_than\n");
       if (argc!=5){
-        printf("./test_and_bench subtract 0x<hex of x> 0x<hex of y> 0x<hex of expected>\n");
+        printf("./test_and_bench sub 0x<hex of x> 0x<hex of y> 0x<hex of expected>\n");
 	return -1;
       }
 
@@ -255,10 +266,10 @@ int main(int argc, char** argv){
         if (!error){ printf("correct\n");}
       }
     }
-    else if (strcmp (argv[1],"montmul") == 0){
+    else if (strcmp (argv[1],"mulmodmont") == 0){
       printf("testing montgomery multiplication\n");
       if (argc!=7){
-        printf("./test_and_bench montmul 0x<hex of x> 0x<hex of y> 0x<hex of mod> 0x<hex of modinv> 0x<hex of expected>\n");
+        printf("./test_and_bench mulmodmont 0x<hex of x> 0x<hex of y> 0x<hex of mod> 0x<hex of modinv> 0x<hex of expected>\n");
 	return -1;
       }
 
@@ -268,8 +279,17 @@ int main(int argc, char** argv){
       hexstr_to_bytearray((uint8_t*)m,argv[4]+2);
       hexstr_to_bytearray((uint8_t*)inv,argv[5]+2);
       hexstr_to_bytearray((uint8_t*)expected,argv[6]+2);
-      for (int i=0; i<NUM_ITERS; i++)
-        FUNCNAME(montmul)(out,x,y,m,((UINT*)inv)[0]);
+      struct timespec requestStart, requestEnd;
+      clock_gettime(CLOCK_REALTIME, &requestStart);
+      for (int i=0; i<NUM_ITERS; i++){
+        FUNCNAME(mulmodmont)(out,x,y,m,((UINT*)inv)[0]);
+	x[i%NUM_LIMBS] = out[NUM_LIMBS-1];
+      }
+      clock_gettime(CLOCK_REALTIME, &requestEnd);
+      double accum = ( requestEnd.tv_sec - requestStart.tv_sec )
+                 + ( requestEnd.tv_nsec - requestStart.tv_nsec )
+                 / 1E9;
+      if (NUM_ITERS>1) printf( "execution time: %lf\n", accum );
       if (NUM_ITERS==1){
         int error=0;
         for (int i=0; i<NUM_LIMBS; i++){
@@ -280,11 +300,48 @@ int main(int argc, char** argv){
         }
         if (!error){ printf("correct\n");}
       }
+      return out[0];
     }
-    else if (strcmp (argv[1],"montmul_noninterleaved") == 0){
-      printf("testing montgomery multiplication noninterleaved\n");
+    else if (strcmp (argv[1],"mulmodmontFIOS") == 0){
+      printf("testing montgomeryFIOS multiplication\n");
       if (argc!=7){
-        printf("./test_and_bench montmul_noninterleaved 0x<hex of x> 0x<hex of y> 0x<hex of mod> 0x<hex of modinv> 0x<hex of expected>\n");
+        printf("./test_and_bench mulmodmontFIOS 0x<hex of x> 0x<hex of y> 0x<hex of mod> 0x<hex of modinv> 0x<hex of expected>\n");
+	return -1;
+      }
+
+      UINT x[NUM_LIMBS], y[NUM_LIMBS], m[NUM_LIMBS], inv[NUM_LIMBS], expected[NUM_LIMBS], out[NUM_LIMBS];
+      hexstr_to_bytearray((uint8_t*)x,argv[2]+2);
+      hexstr_to_bytearray((uint8_t*)y,argv[3]+2);
+      hexstr_to_bytearray((uint8_t*)m,argv[4]+2);
+      hexstr_to_bytearray((uint8_t*)inv,argv[5]+2);
+      hexstr_to_bytearray((uint8_t*)expected,argv[6]+2);
+      struct timespec requestStart, requestEnd;
+      clock_gettime(CLOCK_REALTIME, &requestStart);
+      for (int i=0; i<NUM_ITERS; i++){
+        FUNCNAME(mulmodmontFIOS)(out,x,y,m,((UINT*)inv)[0]);
+	x[i%NUM_LIMBS] = out[NUM_LIMBS-1];
+      }
+      clock_gettime(CLOCK_REALTIME, &requestEnd);
+      double accum = ( requestEnd.tv_sec - requestStart.tv_sec )
+                 + ( requestEnd.tv_nsec - requestStart.tv_nsec )
+                 / 1E9;
+      if (NUM_ITERS>1) printf( "execution time: %lf\n", accum );
+      if (NUM_ITERS==1){
+        nt error=0;
+        for (int i=0; i<NUM_LIMBS; i++){
+          if(out[i]!=expected[i]){
+            printf("ERROR: out[%d]=%lx and expected[%d]=%lx\n",i,out[i],i,expected[i]);
+            error=1;
+          }
+        }
+        if (!error){ printf("correct\n");}
+      }
+      return out[0];
+    }
+    else if (strcmp (argv[1],"mulmodmontSOS") == 0){
+      printf("testing montgomery multiplication SOS method\n");
+      if (argc!=7){
+        printf("./test_and_bench mulmodmontSOS 0x<hex of x> 0x<hex of y> 0x<hex of mod> 0x<hex of modinv> 0x<hex of expected>\n");
 	return -1;
       }
 
@@ -295,7 +352,7 @@ int main(int argc, char** argv){
       hexstr_to_bytearray((uint8_t*)inv,argv[5]+2);
       hexstr_to_bytearray((uint8_t*)expected,argv[6]+2);
       for (int i=0; i<NUM_ITERS; i++)
-        FUNCNAME(montmul_noninterleaved)(out,x,y,m,((UINT*)inv)[0]);
+        FUNCNAME(mulmodmontSOS)(out,x,y,m,((UINT*)inv)[0]);
       if (NUM_ITERS==1){
         int error=0;
         for (int i=0; i<NUM_LIMBS; i++){
@@ -346,7 +403,7 @@ int main(int argc, char** argv){
       hexstr_to_bytearray((uint8_t*)inv,argv[5]+2);
       hexstr_to_bytearray((uint8_t*)expected,argv[6]+2);
       for (int i=0; i<NUM_ITERS; i++){
-        FUNCNAME(montmul)(out,x,y,m,((UINT*)inv)[0]);
+        FUNCNAME(mulmodmont)(out,x,y,m,((UINT*)inv)[0]);
       }
       if (NUM_ITERS==1){
         int error=0;
@@ -361,7 +418,7 @@ int main(int argc, char** argv){
     }
     else {
       printf("./test_and_bench <testname> ...\n");
-      printf("    where <testname> is montmul, add, subtract, etc.\n");
+      printf("    where <testname> is mulmodmont, add, sub, etc.\n");
     }
   }
 }

@@ -38,8 +38,8 @@ And if you need other sizes, define them:
   #undef LIMB_BITS_OVERFLOW
 
 Now you can use functions like:
-  montmul256_64bitlimbs(out,x,y,m,inv);
-  subtract512_32bitlimbs(out,a,b);
+  mulmodmont256_64bitlimbs(out,x,y,m,inv);
+  sub512_32bitlimbs(out,a,b);
 
 Warning: LIMB_BITS corresponds to the uint*_t type, and multiplication requires double the bits, for example 64-bit limbs require type uint128_t, which may be unavailable on some targets like Wasm.
 */
@@ -85,7 +85,7 @@ UINT FUNCNAME(add)(UINT* const out, const UINT* const x, const UINT* const y){
 // algorithm 14.9, Handbook of Applied Cryptography, http://cacr.uwaterloo.ca/hac/about/chap14.pdf
 // the book says it computes x-y for x>=y, but actually it computes the 2's complement for x<y
 // note: algorithm 14.9 allow adding c=-1, but we just subtract c=1 instead
-UINT FUNCNAME(subtract)(UINT* const out, const UINT* const x, const UINT* const y){
+UINT FUNCNAME(sub)(UINT* const out, const UINT* const x, const UINT* const y){
   UINT c=0;
   #pragma unroll
   for (int i=0; i<NUM_LIMBS; i++){
@@ -176,7 +176,7 @@ void FUNCNAME(div)(UINT* const q, UINT* const r, const UINT* const x, const UINT
   // now the while subtract loop
   while (FUNCNAME(less_than_or_equal)(y_n_t,x)){
     q[n-t]+=1;
-    FUNCNAME(subtract(x_,x,y_n_t));
+    FUNCNAME(sub(x_,x,y_n_t));
   }
 
   // step 3 in book
@@ -299,15 +299,15 @@ void FUNCNAME(addmod)(UINT* const out, const UINT* const x, const UINT* const y,
   UINT carry = FUNCNAME(add)(out,x,y);
   // In textbook 14.27, says addmod is add and an extra step: subtract m iff x+y>=m
   if (carry || FUNCNAME(less_than_or_equal)(m,out)){
-    FUNCNAME(subtract)(out, out, m);
+    FUNCNAME(sub)(out, out, m);
   }
   // note: we don't consider the case x+y-m>m. Because, for our crypto application, we assume x,y<m.
 }
 
 // compute x-y (mod m) for x,y < m
 // uses fact 14.27, Handbook of Applied Cryptography, http://cacr.uwaterloo.ca/hac/about/chap14.pdf
-void FUNCNAME(subtractmod)(UINT* const out, const UINT* const x, const UINT* const y, const UINT* const m){
-  UINT c = FUNCNAME(subtract)(out,x,y);
+void FUNCNAME(submod)(UINT* const out, const UINT* const x, const UINT* const y, const UINT* const m){
+  UINT c = FUNCNAME(sub)(out,x,y);
   // if c, then x<y, so result is negative, need to get it's magnitude and subtract it from m 
   if (c){
     FUNCNAME(add)(out, m, out);		// add m to overflow back
@@ -351,7 +351,7 @@ void FUNCNAME(montreduce)(UINT* const out, const UINT* const T, const UINT* cons
 
   // final subtraction, first see if necessary
   if (A[NUM_LIMBS*2] || FUNCNAME(less_than_or_equal)(m,out)){
-    FUNCNAME(subtract)(out, out, m);
+    FUNCNAME(sub)(out, out, m);
   }
 }
 
@@ -365,14 +365,17 @@ void FUNCNAME(montsquare)(UINT* const out, const UINT* const x, const UINT* cons
 
 // algorithm 14.12 followed by 14.32
 // this might be slower than algorithm 14.36, which interleaves these steps
-void FUNCNAME(montmul_noninterleaved)(UINT* const out, const UINT* const x, const UINT* const y, const UINT* const m, const UINT inv){
+// Known as the Separated Operand Scanning (SOS) Method
+void FUNCNAME(mulmodmontSOS)(UINT* const out, const UINT* const x, const UINT* const y, const UINT* const m, const UINT inv){
   UINT out_internal[NUM_LIMBS*2];
   FUNCNAME(mul)(out_internal, x, y);
   FUNCNAME(montreduce)(out, out_internal, m, inv);
 }
 
+
 // algorithm 14.36, Handbook of Applied Cryptography, http://cacr.uwaterloo.ca/hac/about/chap14.pdf
-void FUNCNAME(montmul)(UINT* const out, const UINT* const x, const UINT* const y, const UINT* const m, const UINT inv){
+// Known as the Finely Integrated Operand Scanning (FIOS) Method
+void FUNCNAME(mulmodmontFIOS)(UINT* const out, const UINT* const x, const UINT* const y, const UINT* const m, const UINT inv){
   UINT A[NUM_LIMBS*2+1];
   for (int i=0;i<NUM_LIMBS*2+1;i++)
     A[i]=0;
@@ -411,12 +414,17 @@ void FUNCNAME(montmul)(UINT* const out, const UINT* const x, const UINT* const y
 
   // final subtraction, first see if necessary
   if (A[NUM_LIMBS*2]>0 || FUNCNAME(less_than_or_equal)(m,out))
-      FUNCNAME(subtract)(out, out, m);
+      FUNCNAME(sub)(out, out, m);
 }
 
+// Uses CIOS method for montgomery multiplication, based on algorithm from (but using notation of above mulmodmont) Çetin K. Koç; Tolga Acar; Burton S. Kaliski, Jr. (June 1996). "Analyzing and Comparing Montgomery Multiplication Algorithms". IEEE Micro. 16 (3): 26–33.
+// Known as the Coarsely Integrated Operand Scanning (CIOS)
+void FUNCNAME(mulmodmontCIOS)(UINT* const out, const UINT* const x, const UINT* const y, const UINT* const m, const UINT inv){
+  FUNCNAME(mulmodmont)(out, x, y, m, inv);
+}
 
-// The CIOS method for montgomery multiplication, copied from (but using notation of above montmul) Çetin K. Koç; Tolga Acar; Burton S. Kaliski, Jr. (June 1996). "Analyzing and Comparing Montgomery Multiplication Algorithms". IEEE Micro. 16 (3): 26–33.
-void FUNCNAME(montmulCIOS)(UINT* const out, const UINT* const x, const UINT* const y, const UINT* const m, const UINT inv){
+// see description for mulmodmontCIOS
+void FUNCNAME(mulmodmont)(UINT* const out, const UINT* const x, const UINT* const y, const UINT* const m, const UINT inv){
   UINT A[NUM_LIMBS+2];
   for (int i=0;i<NUM_LIMBS+2;i++)
     A[i]=0;
@@ -456,15 +464,15 @@ void FUNCNAME(montmulCIOS)(UINT* const out, const UINT* const x, const UINT* con
 
   // final subtraction, first see if necessary
   if (A[NUM_LIMBS]>0 || FUNCNAME(less_than_or_equal)(m,out))
-      FUNCNAME(subtract)(out, out, m);
+      FUNCNAME(sub)(out, out, m);
 }
 
 
-// like montmul, but with two of the args hard-coded
-void FUNCNAME(montmul_3args_)(UINT* const out, const UINT* const x, const UINT* const y){
+// like mulmodmont, but with two of the args hard-coded
+void FUNCNAME(mulmodmont_3args_)(UINT* const out, const UINT* const x, const UINT* const y){
   UINT* m = (UINT*)4444444;    // hard-code m or address to m here
   UINT inv = 6666666;  // hard-code inv here
-  FUNCNAME(montmul)(out, x, y, m, inv);
+  FUNCNAME(mulmodmont)(out, x, y, m, inv);
 }
 
 #endif
