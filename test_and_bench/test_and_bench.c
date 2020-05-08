@@ -327,7 +327,7 @@ int main(int argc, char** argv){
                  / 1E9;
       if (NUM_ITERS>1) printf( "execution time: %lf\n", accum );
       if (NUM_ITERS==1){
-        nt error=0;
+        int error=0;
         for (int i=0; i<NUM_LIMBS; i++){
           if(out[i]!=expected[i]){
             printf("ERROR: out[%d]=%lx and expected[%d]=%lx\n",i,out[i],i,expected[i]);

@@ -417,12 +417,6 @@ void FUNCNAME(mulmodmontFIOS)(UINT* const out, const UINT* const x, const UINT* 
       FUNCNAME(sub)(out, out, m);
 }
 
-// Uses CIOS method for montgomery multiplication, based on algorithm from (but using notation of above mulmodmont) Çetin K. Koç; Tolga Acar; Burton S. Kaliski, Jr. (June 1996). "Analyzing and Comparing Montgomery Multiplication Algorithms". IEEE Micro. 16 (3): 26–33.
-// Known as the Coarsely Integrated Operand Scanning (CIOS)
-void FUNCNAME(mulmodmontCIOS)(UINT* const out, const UINT* const x, const UINT* const y, const UINT* const m, const UINT inv){
-  FUNCNAME(mulmodmont)(out, x, y, m, inv);
-}
-
 // see description for mulmodmontCIOS
 void FUNCNAME(mulmodmont)(UINT* const out, const UINT* const x, const UINT* const y, const UINT* const m, const UINT inv){
   UINT A[NUM_LIMBS+2];
@@ -467,6 +461,13 @@ void FUNCNAME(mulmodmont)(UINT* const out, const UINT* const x, const UINT* cons
       FUNCNAME(sub)(out, out, m);
 }
 
+
+
+// Uses CIOS method for montgomery multiplication, based on algorithm from (but using notation of above mulmodmont) Çetin K. Koç; Tolga Acar; Burton S. Kaliski, Jr. (June 1996). "Analyzing and Comparing Montgomery Multiplication Algorithms". IEEE Micro. 16 (3): 26–33.
+// Known as the Coarsely Integrated Operand Scanning (CIOS)
+void FUNCNAME(mulmodmontCIOS)(UINT* const out, const UINT* const x, const UINT* const y, const UINT* const m, const UINT inv){
+  FUNCNAME(mulmodmont)(out, x, y, m, inv);
+}
 
 // like mulmodmont, but with two of the args hard-coded
 void FUNCNAME(mulmodmont_3args_)(UINT* const out, const UINT* const x, const UINT* const y){
