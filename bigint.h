@@ -414,7 +414,7 @@ void FUNCNAME(mulmodmontFIOS)(UINT* const out, const UINT* const x, const UINT* 
 
   // final subtraction, first see if necessary
   if (A[NUM_LIMBS*2]>0 || FUNCNAME(less_than_or_equal)(m,out))
-      FUNCNAME(sub)(out, out, m);
+    FUNCNAME(sub)(out, out, m);
 }
 
 // see description for mulmodmontCIOS
@@ -424,7 +424,6 @@ void FUNCNAME(mulmodmont)(UINT* const out, const UINT* const x, const UINT* cons
     A[i]=0;
   //#pragma unroll	// this unroll increases binary size by a lot
   for (int i=0; i<NUM_LIMBS; i++){
-    //UINT ui = (A[i]+x[i]*y[0])*inv;
     UINT carry = 0;
     UINT2 sum = 0;
     #pragma unroll
@@ -458,7 +457,7 @@ void FUNCNAME(mulmodmont)(UINT* const out, const UINT* const x, const UINT* cons
 
   // final subtraction, first see if necessary
   if (A[NUM_LIMBS]>0 || FUNCNAME(less_than_or_equal)(m,out))
-      FUNCNAME(sub)(out, out, m);
+    FUNCNAME(sub)(out, out, m);
 }
 
 
