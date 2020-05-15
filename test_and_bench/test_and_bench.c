@@ -302,6 +302,40 @@ int main(int argc, char** argv){
       }
       return out[0];
     }
+    else if (strcmp (argv[1],"mulmodmontHAC") == 0){
+      printf("testing montgomeryHAC multiplication\n");
+      if (argc!=7){
+        printf("./test_and_bench mulmodmontHAC 0x<hex of x> 0x<hex of y> 0x<hex of mod> 0x<hex of modinv> 0x<hex of expected>\n");
+	return -1;
+      }
+
+      UINT x[NUM_LIMBS], y[NUM_LIMBS], m[NUM_LIMBS], inv[NUM_LIMBS], expected[NUM_LIMBS], out[NUM_LIMBS];
+      hexstr_to_bytearray((uint8_t*)x,argv[2]+2);
+      hexstr_to_bytearray((uint8_t*)y,argv[3]+2);
+      hexstr_to_bytearray((uint8_t*)m,argv[4]+2);
+      hexstr_to_bytearray((uint8_t*)inv,argv[5]+2);
+      hexstr_to_bytearray((uint8_t*)expected,argv[6]+2);
+      struct timespec requestStart, requestEnd;
+      clock_gettime(CLOCK_REALTIME, &requestStart);
+      for (int i=0; i<NUM_ITERS; i++)
+        FUNCNAME(mulmodmontHAC)(out,x,y,m,((UINT*)inv)[0]);
+      clock_gettime(CLOCK_REALTIME, &requestEnd);
+      double accum = ( requestEnd.tv_sec - requestStart.tv_sec )
+                 + ( requestEnd.tv_nsec - requestStart.tv_nsec )
+                 / 1E9;
+      if (NUM_ITERS>1) printf( "execution time: %lf s\n", accum );
+      if (NUM_ITERS==1){
+        int error=0;
+        for (int i=0; i<NUM_LIMBS; i++){
+          if(out[i]!=expected[i]){
+            printf("ERROR: out[%d]=%lx and expected[%d]=%lx\n",i,out[i],i,expected[i]);
+            error=1;
+          }
+        }
+        if (!error){ printf("correct\n");}
+      }
+      return out[0];
+    }
     else if (strcmp (argv[1],"mulmodmontFIOS") == 0){
       printf("testing montgomeryFIOS multiplication\n");
       if (argc!=7){

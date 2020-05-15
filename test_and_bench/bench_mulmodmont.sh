@@ -1,7 +1,10 @@
 
 # set parameters here:
-CC=gcc
+#CC=gcc
 #CC=clang
+CC=/home/user/repos/llvm/llvm10/llvm-project/build/bin/clang
+#CC=/home/user/repos/gcc/bin_10.1.0/home/user/GCC-10.1.0/bin/gcc
+#CC=/home/user/repos/gcc/bin_9.2.0/home/user/GCC-9.2.0/bin/gcc
 FLAGS="-march=native -O4"
 NUMITERS=23159000
 
@@ -33,6 +36,11 @@ echo MULMODMONT FIOS ALGORITHM
 ./bench384 mulmodmontFIOS $INPUT2
 
 echo ""
+echo MULMODMONT HAC ALGORITHM
+./bench384 mulmodmontHAC $INPUT1
+./bench384 mulmodmontHAC $INPUT2
+
+echo ""
 echo MULMODMONT CIOS ALGORITHM
 ./bench384 mulmodmont $INPUT1
 ./bench384 mulmodmont $INPUT2
@@ -51,6 +59,8 @@ $CC test_and_bench.c ../asm/mulmodmont384.x86_64.S -o test384 -w -DBIGINT_BITS=3
 ./test384 mulmodmontSOS $INPUT2
 ./test384 mulmodmontFIOS $INPUT1
 ./test384 mulmodmontFIOS $INPUT2
+./test384 mulmodmontHAC $INPUT1
+./test384 mulmodmontHAC $INPUT2
 ./test384 mulmodmont $INPUT1
 ./test384 mulmodmont $INPUT2
 ./test384 mulmodmont384_asm $INPUT1

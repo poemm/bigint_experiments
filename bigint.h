@@ -230,8 +230,10 @@ void FUNCNAME(mul)(UINT* const out, const UINT* const x, const UINT* const y){
   UINT w[NUM_LIMBS*2];
   for (int i=0; i<2*NUM_LIMBS; i++)
     w[i]=0;
+  #pragma unroll
   for (int i=0; i<NUM_LIMBS; i++){
     UINT c = 0;
+    #pragma unroll
     for (int j=0; j<NUM_LIMBS; j++){
       UINT2 uv = (UINT2)w[i+j] + (UINT2)x[j]*y[i];
       uv += c;
@@ -372,14 +374,12 @@ void FUNCNAME(mulmodmontSOS)(UINT* const out, const UINT* const x, const UINT* c
   FUNCNAME(montreduce)(out, out_internal, m, inv);
 }
 
-
 // algorithm 14.36, Handbook of Applied Cryptography, http://cacr.uwaterloo.ca/hac/about/chap14.pdf
-// Known as the Finely Integrated Operand Scanning (FIOS) Method
-void FUNCNAME(mulmodmontFIOS)(UINT* const out, const UINT* const x, const UINT* const y, const UINT* const m, const UINT inv){
+void FUNCNAME(mulmodmontHAC)(UINT* const out, const UINT* const x, const UINT* const y, const UINT* const m, const UINT inv){
   UINT A[NUM_LIMBS*2+1];
   for (int i=0;i<NUM_LIMBS*2+1;i++)
     A[i]=0;
-  //#pragma unroll	// this unroll increases binary size by a lot
+  #pragma unroll	// this unroll increases binary size by a lot
   for (int i=0; i<NUM_LIMBS; i++){
     UINT ui = (A[i]+x[i]*y[0])*inv;
     UINT carry = 0;
@@ -417,12 +417,64 @@ void FUNCNAME(mulmodmontFIOS)(UINT* const out, const UINT* const x, const UINT* 
     FUNCNAME(sub)(out, out, m);
 }
 
+// From paper Çetin K. Koç; Tolga Acar; Burton S. Kaliski, Jr. (June 1996). "Analyzing and Comparing Montgomery Multiplication Algorithms". IEEE Micro. 16 (3): 26–33.
+void FUNCNAME(mulmodmontFIOS)(UINT* const out, const UINT* const a, const UINT* const b, const UINT* const mod, const UINT inv){
+  UINT t[NUM_LIMBS+2];
+  for (int i=0;i<NUM_LIMBS+2;i++)
+    t[i]=0;
+  #pragma unroll	// this unroll increases binary size by a lot
+  for (int i=0; i<NUM_LIMBS; i++){
+    UINT carry = 0;
+    UINT2 sum = 0;
+    sum = (UINT2)(t[0])+(UINT2)(a[0])*b[i];
+    carry = sum>>LIMB_BITS;
+    int k=1;
+    while (carry && k<=NUM_LIMBS+1){
+      UINT2 temp = (UINT2)t[k] + carry;
+      t[k]=(UINT)temp;
+      carry = temp >> LIMB_BITS;
+      k++;
+    }
+    UINT m = ((UINT)sum)*inv;
+    sum = (UINT)sum + (UINT2)m*mod[0]; // lower limb of sum should be zero
+    carry = sum >> LIMB_BITS;
+    #pragma unroll
+    for (int j=1; j<NUM_LIMBS; j++){
+      sum = (UINT2)t[j] + (UINT2)a[j]*b[i] + carry;
+      carry = sum >> LIMB_BITS;
+      k=j+1;
+      while (carry && k<=NUM_LIMBS+1){
+        UINT2 temp = (UINT2)t[k] + carry;
+        t[k]=(UINT)temp;
+        carry = temp >> LIMB_BITS;
+        k++;
+      }
+      sum = (UINT)sum + (UINT2)m*mod[j];
+      carry = sum>>LIMB_BITS;
+      t[j-1] = (UINT)sum;
+    }
+    sum = (UINT2)t[NUM_LIMBS] + carry;
+    carry = sum >> LIMB_BITS;
+    t[NUM_LIMBS-1] = (UINT)sum;
+    t[NUM_LIMBS] = t[NUM_LIMBS+1]+carry;
+    t[NUM_LIMBS+1] = 0;
+  }
+
+  // output correct values
+  for (int i=0; i<NUM_LIMBS;i++)
+    out[i] = t[i];
+
+  // final subtraction, first see if necessary
+  if (t[NUM_LIMBS]>0 || FUNCNAME(less_than_or_equal)(mod,out))
+    FUNCNAME(sub)(out, out, mod);
+}
+
 // see description for mulmodmontCIOS
 void FUNCNAME(mulmodmont)(UINT* const out, const UINT* const x, const UINT* const y, const UINT* const m, const UINT inv){
   UINT A[NUM_LIMBS+2];
   for (int i=0;i<NUM_LIMBS+2;i++)
     A[i]=0;
-  //#pragma unroll	// this unroll increases binary size by a lot
+  #pragma unroll	// this unroll increases binary size by a lot
   for (int i=0; i<NUM_LIMBS; i++){
     UINT carry = 0;
     UINT2 sum = 0;
@@ -459,8 +511,6 @@ void FUNCNAME(mulmodmont)(UINT* const out, const UINT* const x, const UINT* cons
   if (A[NUM_LIMBS]>0 || FUNCNAME(less_than_or_equal)(m,out))
     FUNCNAME(sub)(out, out, m);
 }
-
-
 
 // Uses CIOS method for montgomery multiplication, based on algorithm from (but using notation of above mulmodmont) Çetin K. Koç; Tolga Acar; Burton S. Kaliski, Jr. (June 1996). "Analyzing and Comparing Montgomery Multiplication Algorithms". IEEE Micro. 16 (3): 26–33.
 // Known as the Coarsely Integrated Operand Scanning (CIOS)
