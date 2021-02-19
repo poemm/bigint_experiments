@@ -1,21 +1,24 @@
 
 # set parameters here:
 #CC=gcc
-#CC=clang
-CC=/home/user/repos/llvm/llvm10/llvm-project/build/bin/clang
+CC=clang
+#CC=/home/user/repos/llvm/llvm10/llvm-project/build/bin/clang
 #CC=/home/user/repos/gcc/bin_10.1.0/home/user/GCC-10.1.0/bin/gcc
 #CC=/home/user/repos/gcc/bin_9.2.0/home/user/GCC-9.2.0/bin/gcc
 FLAGS="-march=native -O4"
-NUMITERS=23159000
+NUMITERS=1000000
 
 
 echo EXECUTING WITH THE FOLLOWING CPU
 lscpu | grep Model\ name
 
+UNROLL="-DUNROLL=1 -DUNROLL_OUTER=0"
+
 echo ""
 echo COMPILING WITH THE FOLLOWING COMPILER
 $CC --version | head -n 1
-$CC test_and_bench.c ../asm/mulmodmont384.x86_64.S -o bench384 -w -DBIGINT_BITS=384 -DLIMB_BITS=64 -DLIMB_BITS_OVERFLOW=128 -DNUM_ITERS=$NUMITERS $FLAGS
+$CC test_and_bench.c ../asm/mulmodmont384.x86_64.S -o bench384 -w -DNUMLIMBS=6 -DNUM_ITERS=$NUMITERS $FLAGS $UNROLL
+$CC test_and_bench.c ../asm/mulmodmont384.x86_64.S -o bench384_hardcoded -w -DNUMLIMBS_HARDCODED=1 -DNUMLIMBS=6 -DNUM_ITERS=$NUMITERS $FLAGS $UNROLL
 
 echo ""
 echo EACH ALGORITHM EXECUTES TWICE, $NUMITERS TIMES EACH
@@ -29,39 +32,60 @@ echo ""
 echo MULMODMONT SOS ALGORITHM
 ./bench384 mulmodmontSOS $INPUT1
 ./bench384 mulmodmontSOS $INPUT2
+./bench384_hardcoded mulmodmontSOS $INPUT1
+./bench384_hardcoded mulmodmontSOS $INPUT2
 
 echo ""
 echo MULMODMONT FIOS ALGORITHM
 ./bench384 mulmodmontFIOS $INPUT1
 ./bench384 mulmodmontFIOS $INPUT2
+./bench384_hardcoded mulmodmontFIOS $INPUT1
+./bench384_hardcoded mulmodmontFIOS $INPUT2
 
 echo ""
 echo MULMODMONT HAC ALGORITHM
 ./bench384 mulmodmontHAC $INPUT1
 ./bench384 mulmodmontHAC $INPUT2
+./bench384_hardcoded mulmodmontHAC $INPUT1
+./bench384_hardcoded mulmodmontHAC $INPUT2
 
 echo ""
 echo MULMODMONT CIOS ALGORITHM
-./bench384 mulmodmont $INPUT1
-./bench384 mulmodmont $INPUT2
+./bench384 mulmodmontCIOS $INPUT1
+./bench384 mulmodmontCIOS $INPUT2
+./bench384_hardcoded mulmodmontCIOS $INPUT1
+./bench384_hardcoded mulmodmontCIOS $INPUT2
 
 echo ""
 echo MULMODMONT ASSEMBLY IMPLEMENTATION
 ./bench384 mulmodmont384_asm $INPUT1
 ./bench384 mulmodmont384_asm $INPUT2
+./bench384_hardcoded mulmodmont384_asm $INPUT1
+./bench384_hardcoded mulmodmont384_asm $INPUT2
 
 
 
 echo ""
 echo SANITY CHECK: MAKE SURE THE FOLLOWING TESTS PASS \(each should print test name then new line with \"correct\"\)
-$CC test_and_bench.c ../asm/mulmodmont384.x86_64.S -o test384 -w -DBIGINT_BITS=384 -DLIMB_BITS=64 -DLIMB_BITS_OVERFLOW=128 -DNUM_ITERS=1 $FLAGS
+$CC test_and_bench.c ../asm/mulmodmont384.x86_64.S -o test384 -w -DNUMLIMBS=6 -DNUM_ITERS=1 $FLAGS $UNROLL
+$CC test_and_bench.c ../asm/mulmodmont384.x86_64.S -o test384_hardcoded -w -DNUMLIMBS_HARDCODED=1 -DNUMLIMBS=6 -DNUM_ITERS=1 $FLAGS $UNROLL
 ./test384 mulmodmontSOS $INPUT1
 ./test384 mulmodmontSOS $INPUT2
 ./test384 mulmodmontFIOS $INPUT1
 ./test384 mulmodmontFIOS $INPUT2
 ./test384 mulmodmontHAC $INPUT1
 ./test384 mulmodmontHAC $INPUT2
-./test384 mulmodmont $INPUT1
-./test384 mulmodmont $INPUT2
+./test384 mulmodmontCIOS $INPUT1
+./test384 mulmodmontCIOS $INPUT2
 ./test384 mulmodmont384_asm $INPUT1
 ./test384 mulmodmont384_asm $INPUT2
+./test384_hardcoded mulmodmontSOS $INPUT1
+./test384_hardcoded mulmodmontSOS $INPUT2
+./test384_hardcoded mulmodmontFIOS $INPUT1
+./test384_hardcoded mulmodmontFIOS $INPUT2
+./test384_hardcoded mulmodmontHAC $INPUT1
+./test384_hardcoded mulmodmontHAC $INPUT2
+./test384_hardcoded mulmodmontCIOS $INPUT1
+./test384_hardcoded mulmodmontCIOS $INPUT2
+./test384_hardcoded mulmodmont384_asm $INPUT1
+./test384_hardcoded mulmodmont384_asm $INPUT2

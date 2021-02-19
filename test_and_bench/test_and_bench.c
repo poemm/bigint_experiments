@@ -1,9 +1,21 @@
-
-
-#include "utils.h"
-#include "../bigint.h"
-
 #include <time.h>
+#include "utils.h"
+
+/*
+This file must compiled with flags (the integers can be different):
+  `-DNUMLIMBS=6`
+  `-DNUM_ITERS=100`
+and optionally compiled with flag
+  `-DNUMLIMBS_HARDCODED=1`
+*/
+
+#ifdef NUMLIMBS_HARDCODED
+  #define NUM_LIMBS NUMLIMBS
+  #include "../bigint.h"
+#else
+  #include "../bigint.h"
+  NUM_LIMBS = NUMLIMBS;
+#endif
 
 
 
@@ -19,12 +31,17 @@ int main(int argc, char** argv){
 	return -1;
       }
 
-      UINT x[NUM_LIMBS], y[NUM_LIMBS], expected[NUM_LIMBS], out[NUM_LIMBS];
+      uint64_t x[NUM_LIMBS], y[NUM_LIMBS], expected[NUM_LIMBS], out[NUM_LIMBS];
       hexstr_to_bytearray((uint8_t*)x,argv[2]+2);
       hexstr_to_bytearray((uint8_t*)y,argv[3]+2);
       hexstr_to_bytearray((uint8_t*)expected,argv[4]+2);
+      struct timespec start, end;
+      clock_gettime(CLOCK_REALTIME, &start);
       for (int i=0; i<NUM_ITERS; i++)
-        FUNCNAME(add)(out,x,y);
+        biginth_add(out,x,y);
+      clock_gettime(CLOCK_REALTIME, &end);
+      uint64_t accum = 1000000000 * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
+      if (NUM_ITERS>1) printf("%lf ns per iter\n",  accum/(double)NUM_ITERS);
       if (NUM_ITERS==1){
         int error=0;
         for (int i=0; i<NUM_LIMBS; i++){
@@ -43,22 +60,20 @@ int main(int argc, char** argv){
 	return -1;
       }
 
-      UINT x[NUM_LIMBS], y[NUM_LIMBS], mod[NUM_LIMBS], expected[NUM_LIMBS], out[NUM_LIMBS];
+      uint64_t x[NUM_LIMBS], y[NUM_LIMBS], mod[NUM_LIMBS], expected[NUM_LIMBS], out[NUM_LIMBS];
       hexstr_to_bytearray((uint8_t*)x,argv[2]+2);
       hexstr_to_bytearray((uint8_t*)y,argv[3]+2);
       hexstr_to_bytearray((uint8_t*)mod,argv[4]+2);
       hexstr_to_bytearray((uint8_t*)expected,argv[5]+2);
-      struct timespec requestStart, requestEnd;
-      clock_gettime(CLOCK_REALTIME, &requestStart);
+      struct timespec start, end;
+      clock_gettime(CLOCK_REALTIME, &start);
       for (int i=0; i<NUM_ITERS; i++){
-        FUNCNAME(addmod)(out,x,y,mod);
+        biginth_addmod(out,x,y,mod);
 	//x[i%NUM_LIMBS] = out[NUM_LIMBS-1];
       }
-      clock_gettime(CLOCK_REALTIME, &requestEnd);
-      double accum = ( requestEnd.tv_sec - requestStart.tv_sec )
-                 + ( requestEnd.tv_nsec - requestStart.tv_nsec )
-                 / 1E9;
-      if (NUM_ITERS>1) printf( "execution time: %lf s\n", accum );
+      clock_gettime(CLOCK_REALTIME, &end);
+      uint64_t accum = 1000000000 * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
+      if (NUM_ITERS>1) printf("%lf ns per iter\n",  accum/(double)NUM_ITERS);
       if (NUM_ITERS==1){
         int error=0;
         for (int i=0; i<NUM_LIMBS; i++){
@@ -77,12 +92,17 @@ int main(int argc, char** argv){
 	return -1;
       }
 
-      UINT x[NUM_LIMBS], y[NUM_LIMBS], expected[NUM_LIMBS], out[NUM_LIMBS];
+      uint64_t x[NUM_LIMBS], y[NUM_LIMBS], expected[NUM_LIMBS], out[NUM_LIMBS];
       hexstr_to_bytearray((uint8_t*)x,argv[2]+2);
       hexstr_to_bytearray((uint8_t*)y,argv[3]+2);
       hexstr_to_bytearray((uint8_t*)expected,argv[4]+2);
+      struct timespec start, end;
+      clock_gettime(CLOCK_REALTIME, &start);
       for (int i=0; i<NUM_ITERS; i++)
-        FUNCNAME(sub)(out,x,y);
+        biginth_sub(out,x,y);
+      clock_gettime(CLOCK_REALTIME, &end);
+      uint64_t accum = 1000000000 * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
+      if (NUM_ITERS>1) printf("%lf ns per iter\n",  accum/(double)NUM_ITERS);
       if (NUM_ITERS==1){
         int error=0;
         for (int i=0; i<NUM_LIMBS; i++){
@@ -101,13 +121,18 @@ int main(int argc, char** argv){
 	return -1;
       }
 
-      UINT x[NUM_LIMBS], y[NUM_LIMBS], mod[NUM_LIMBS], expected[NUM_LIMBS], out[NUM_LIMBS];
+      uint64_t x[NUM_LIMBS], y[NUM_LIMBS], mod[NUM_LIMBS], expected[NUM_LIMBS], out[NUM_LIMBS];
       hexstr_to_bytearray((uint8_t*)x,argv[2]+2);
       hexstr_to_bytearray((uint8_t*)y,argv[3]+2);
       hexstr_to_bytearray((uint8_t*)mod,argv[4]+2);
       hexstr_to_bytearray((uint8_t*)expected,argv[5]+2);
+      struct timespec start, end;
+      clock_gettime(CLOCK_REALTIME, &start);
       for (int i=0; i<NUM_ITERS; i++)
-        FUNCNAME(submod)(out,x,y,mod);
+        biginth_submod(out,x,y,mod);
+      clock_gettime(CLOCK_REALTIME, &end);
+      uint64_t accum = 1000000000 * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
+      if (NUM_ITERS>1) printf("%lf ns per iter\n",  accum/(double)NUM_ITERS);
       if (NUM_ITERS==1){
         int error=0;
         for (int i=0; i<NUM_LIMBS; i++){
@@ -126,13 +151,18 @@ int main(int argc, char** argv){
 	return -1;
       }
 
-      UINT x[NUM_LIMBS], y[NUM_LIMBS];
+      uint64_t x[NUM_LIMBS], y[NUM_LIMBS];
       uint8_t expected, out;
       hexstr_to_bytearray((uint8_t*)x,argv[2]+2);
       hexstr_to_bytearray((uint8_t*)y,argv[3]+2);
       hexstr_to_bytearray(&expected,argv[4]+2);
+      struct timespec start, end;
+      clock_gettime(CLOCK_REALTIME, &start);
       for (int i=0; i<NUM_ITERS; i++)
-        out = FUNCNAME(less_than)(x,y);
+        out = biginth_less_than(x,y);
+      clock_gettime(CLOCK_REALTIME, &end);
+      uint64_t accum = 1000000000 * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
+      if (NUM_ITERS>1) printf("%lf ns per iter\n",  accum/(double)NUM_ITERS);
       if (NUM_ITERS==1){
         if (expected != out)
           //printf("ERROR: less than failed. %u %u\n",expected,out);
@@ -148,13 +178,18 @@ int main(int argc, char** argv){
 	return -1;
       }
 
-      UINT x[NUM_LIMBS], y[NUM_LIMBS];
+      uint64_t x[NUM_LIMBS], y[NUM_LIMBS];
       uint8_t expected, out;
       hexstr_to_bytearray((uint8_t*)x,argv[2]+2);
       hexstr_to_bytearray((uint8_t*)y,argv[3]+2);
       hexstr_to_bytearray(&expected,argv[4]+2);
+      struct timespec start, end;
+      clock_gettime(CLOCK_REALTIME, &start);
       for (int i=0; i<NUM_ITERS; i++)
-        out = FUNCNAME(less_than_or_equal)(x,y);
+        out = biginth_less_than_or_equal(x,y);
+      clock_gettime(CLOCK_REALTIME, &end);
+      uint64_t accum = 1000000000 * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
+      if (NUM_ITERS>1) printf("%lf ns per iter\n",  accum/(double)NUM_ITERS);
       if (NUM_ITERS==1){
         if (expected != out)
           //printf("ERROR: less than or equal failed.\n");
@@ -170,12 +205,17 @@ int main(int argc, char** argv){
 	return -1;
       }
 
-      UINT x[NUM_LIMBS], y[NUM_LIMBS], expected[2*NUM_LIMBS], out[2*NUM_LIMBS];
+      uint64_t x[NUM_LIMBS], y[NUM_LIMBS], expected[2*NUM_LIMBS], out[2*NUM_LIMBS];
       hexstr_to_bytearray((uint8_t*)x,argv[2]+2);
       hexstr_to_bytearray((uint8_t*)y,argv[3]+2);
       hexstr_to_bytearray((uint8_t*)expected,argv[4]+2);
+      struct timespec start, end;
+      clock_gettime(CLOCK_REALTIME, &start);
       for (int i=0; i<NUM_ITERS; i++)
-        FUNCNAME(mul)(out,x,y);
+        biginth_mul(out,x,y);
+      clock_gettime(CLOCK_REALTIME, &end);
+      uint64_t accum = 1000000000 * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
+      if (NUM_ITERS>1) printf("%lf ns per iter\n",  accum/(double)NUM_ITERS);
       if (NUM_ITERS==1){
         int error=0;
         for (int i=0; i<2*NUM_LIMBS; i++){
@@ -193,13 +233,18 @@ int main(int argc, char** argv){
         printf("./test_and_bench div 0x<hex of x> 0x<hex of y> 0x<hex of expected quotient> 0x<hex of expected remainder>\n");
 	return -1;
       }
-      UINT x[NUM_LIMBS], y[NUM_LIMBS], outr_expected[NUM_LIMBS], outq_expected[NUM_LIMBS], outr[NUM_LIMBS], outq[NUM_LIMBS];
+      uint64_t x[NUM_LIMBS], y[NUM_LIMBS], outr_expected[NUM_LIMBS], outq_expected[NUM_LIMBS], outr[NUM_LIMBS], outq[NUM_LIMBS];
       hexstr_to_bytearray((uint8_t*)x,argv[2]+2);
       hexstr_to_bytearray((uint8_t*)y,argv[3]+2);
       hexstr_to_bytearray((uint8_t*)outq_expected,argv[4]+2);
       hexstr_to_bytearray((uint8_t*)outr_expected,argv[5]+2);
+      struct timespec start, end;
+      clock_gettime(CLOCK_REALTIME, &start);
       for (int i=0; i<NUM_ITERS; i++)
-        FUNCNAME(div)(outq,outr,x,y);
+        biginth_div(outq,outr,x,y);
+      clock_gettime(CLOCK_REALTIME, &end);
+      uint64_t accum = 1000000000 * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
+      if (NUM_ITERS>1) printf("%lf ns per iter\n",  accum/(double)NUM_ITERS);
       if (NUM_ITERS==1){
         int error=0;
         for (int i=0; i<NUM_LIMBS; i++){
@@ -222,11 +267,16 @@ int main(int argc, char** argv){
 	return -1;
       }
 
-      UINT x[NUM_LIMBS], expected[2*NUM_LIMBS], out[2*NUM_LIMBS];
+      uint64_t x[NUM_LIMBS], expected[2*NUM_LIMBS], out[2*NUM_LIMBS];
       hexstr_to_bytearray((uint8_t*)x,argv[2]+2);
       hexstr_to_bytearray((uint8_t*)expected,argv[3]+2);
+      struct timespec start, end;
+      clock_gettime(CLOCK_REALTIME, &start);
       for (int i=0; i<NUM_ITERS; i++)
-        FUNCNAME(square)(out,x);
+        biginth_square(out,x);
+      clock_gettime(CLOCK_REALTIME, &end);
+      uint64_t accum = 1000000000 * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
+      if (NUM_ITERS>1) printf("%lf ns per iter\n",  accum/(double)NUM_ITERS);
       if (NUM_ITERS==1){
         int error=0;
         for (int i=0; i<2*NUM_LIMBS; i++){
@@ -245,7 +295,7 @@ int main(int argc, char** argv){
         return -1;
       }
 
-      UINT x[2*NUM_LIMBS], m[NUM_LIMBS], inv[NUM_LIMBS], expected[NUM_LIMBS], out[NUM_LIMBS];
+      uint64_t x[2*NUM_LIMBS], m[NUM_LIMBS], inv[NUM_LIMBS], expected[NUM_LIMBS], out[NUM_LIMBS];
       // init x with zeros, just in case arg is small
       for (int i=0; i<NUM_LIMBS*2; i++)
         x[i]=0;
@@ -253,8 +303,13 @@ int main(int argc, char** argv){
       hexstr_to_bytearray((uint8_t*)m,argv[3]+2);
       hexstr_to_bytearray((uint8_t*)inv,argv[4]+2);
       hexstr_to_bytearray((uint8_t*)expected,argv[5]+2);
+      struct timespec start, end;
+      clock_gettime(CLOCK_REALTIME, &start);
       for (int i=0; i<NUM_ITERS; i++)
-        FUNCNAME(montreduce)(out,x,m,((UINT*)inv)[0]);
+        biginth_montreduce(out,x,m,((uint64_t*)inv)[0]);
+      clock_gettime(CLOCK_REALTIME, &end);
+      uint64_t accum = 1000000000 * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
+      if (NUM_ITERS>1) printf("%lf ns per iter\n",  accum/(double)NUM_ITERS);
       if (NUM_ITERS==1){
         int error=0;
         for (int i=0; i<NUM_LIMBS; i++){
@@ -266,30 +321,28 @@ int main(int argc, char** argv){
         if (!error){ printf("correct\n");}
       }
     }
-    else if (strcmp (argv[1],"mulmodmont") == 0){
+    else if (strcmp (argv[1],"mulmodmontCIOS") == 0 || strcmp (argv[1],"mulmodmont") == 0){
       printf("testing montgomery multiplication\n");
       if (argc!=7){
         printf("./test_and_bench mulmodmont 0x<hex of x> 0x<hex of y> 0x<hex of mod> 0x<hex of modinv> 0x<hex of expected>\n");
 	return -1;
       }
 
-      UINT x[NUM_LIMBS], y[NUM_LIMBS], m[NUM_LIMBS], inv[NUM_LIMBS], expected[NUM_LIMBS], out[NUM_LIMBS];
+      uint64_t x[NUM_LIMBS], y[NUM_LIMBS], m[NUM_LIMBS], inv[NUM_LIMBS], expected[NUM_LIMBS], out[NUM_LIMBS];
       hexstr_to_bytearray((uint8_t*)x,argv[2]+2);
       hexstr_to_bytearray((uint8_t*)y,argv[3]+2);
       hexstr_to_bytearray((uint8_t*)m,argv[4]+2);
       hexstr_to_bytearray((uint8_t*)inv,argv[5]+2);
       hexstr_to_bytearray((uint8_t*)expected,argv[6]+2);
-      struct timespec requestStart, requestEnd;
-      clock_gettime(CLOCK_REALTIME, &requestStart);
+      struct timespec start, end;
+      clock_gettime(CLOCK_REALTIME, &start);
       for (int i=0; i<NUM_ITERS; i++){
-        FUNCNAME(mulmodmont)(out,x,y,m,((UINT*)inv)[0]);
+        biginth_mulmodmontCIOS(out,x,y,m,((uint64_t*)inv)[0]);
 	x[i%NUM_LIMBS] = out[NUM_LIMBS-1];
       }
-      clock_gettime(CLOCK_REALTIME, &requestEnd);
-      double accum = ( requestEnd.tv_sec - requestStart.tv_sec )
-                 + ( requestEnd.tv_nsec - requestStart.tv_nsec )
-                 / 1E9;
-      if (NUM_ITERS>1) printf( "execution time: %lf s\n", accum );
+      clock_gettime(CLOCK_REALTIME, &end);
+      uint64_t accum = 1000000000 * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
+      if (NUM_ITERS>1) printf("%lf ns per iter\n",  accum/(double)NUM_ITERS);
       if (NUM_ITERS==1){
         int error=0;
         for (int i=0; i<NUM_LIMBS; i++){
@@ -309,21 +362,19 @@ int main(int argc, char** argv){
 	return -1;
       }
 
-      UINT x[NUM_LIMBS], y[NUM_LIMBS], m[NUM_LIMBS], inv[NUM_LIMBS], expected[NUM_LIMBS], out[NUM_LIMBS];
+      uint64_t x[NUM_LIMBS], y[NUM_LIMBS], m[NUM_LIMBS], inv[NUM_LIMBS], expected[NUM_LIMBS], out[NUM_LIMBS];
       hexstr_to_bytearray((uint8_t*)x,argv[2]+2);
       hexstr_to_bytearray((uint8_t*)y,argv[3]+2);
       hexstr_to_bytearray((uint8_t*)m,argv[4]+2);
       hexstr_to_bytearray((uint8_t*)inv,argv[5]+2);
       hexstr_to_bytearray((uint8_t*)expected,argv[6]+2);
-      struct timespec requestStart, requestEnd;
-      clock_gettime(CLOCK_REALTIME, &requestStart);
+      struct timespec start, end;
+      clock_gettime(CLOCK_REALTIME, &start);
       for (int i=0; i<NUM_ITERS; i++)
-        FUNCNAME(mulmodmontHAC)(out,x,y,m,((UINT*)inv)[0]);
-      clock_gettime(CLOCK_REALTIME, &requestEnd);
-      double accum = ( requestEnd.tv_sec - requestStart.tv_sec )
-                 + ( requestEnd.tv_nsec - requestStart.tv_nsec )
-                 / 1E9;
-      if (NUM_ITERS>1) printf( "execution time: %lf s\n", accum );
+        biginth_mulmodmontHAC(out,x,y,m,((uint64_t*)inv)[0]);
+      clock_gettime(CLOCK_REALTIME, &end);
+      uint64_t accum = 1000000000 * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
+      if (NUM_ITERS>1) printf("%lf ns per iter\n",  accum/(double)NUM_ITERS);
       if (NUM_ITERS==1){
         int error=0;
         for (int i=0; i<NUM_LIMBS; i++){
@@ -343,21 +394,19 @@ int main(int argc, char** argv){
 	return -1;
       }
 
-      UINT x[NUM_LIMBS], y[NUM_LIMBS], m[NUM_LIMBS], inv[NUM_LIMBS], expected[NUM_LIMBS], out[NUM_LIMBS];
+      uint64_t x[NUM_LIMBS], y[NUM_LIMBS], m[NUM_LIMBS], inv[NUM_LIMBS], expected[NUM_LIMBS], out[NUM_LIMBS];
       hexstr_to_bytearray((uint8_t*)x,argv[2]+2);
       hexstr_to_bytearray((uint8_t*)y,argv[3]+2);
       hexstr_to_bytearray((uint8_t*)m,argv[4]+2);
       hexstr_to_bytearray((uint8_t*)inv,argv[5]+2);
       hexstr_to_bytearray((uint8_t*)expected,argv[6]+2);
-      struct timespec requestStart, requestEnd;
-      clock_gettime(CLOCK_REALTIME, &requestStart);
+      struct timespec start, end;
+      clock_gettime(CLOCK_REALTIME, &start);
       for (int i=0; i<NUM_ITERS; i++)
-        FUNCNAME(mulmodmontFIOS)(out,x,y,m,((UINT*)inv)[0]);
-      clock_gettime(CLOCK_REALTIME, &requestEnd);
-      double accum = ( requestEnd.tv_sec - requestStart.tv_sec )
-                 + ( requestEnd.tv_nsec - requestStart.tv_nsec )
-                 / 1E9;
-      if (NUM_ITERS>1) printf( "execution time: %lf s\n", accum );
+        biginth_mulmodmontFIOS(out,x,y,m,((uint64_t*)inv)[0]);
+      clock_gettime(CLOCK_REALTIME, &end);
+      uint64_t accum = 1000000000 * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
+      if (NUM_ITERS>1) printf("%lf ns per iter\n",  accum/(double)NUM_ITERS);
       if (NUM_ITERS==1){
         int error=0;
         for (int i=0; i<NUM_LIMBS; i++){
@@ -377,21 +426,19 @@ int main(int argc, char** argv){
 	return -1;
       }
 
-      UINT x[NUM_LIMBS], y[NUM_LIMBS], m[NUM_LIMBS], inv[NUM_LIMBS], expected[NUM_LIMBS], out[NUM_LIMBS];
+      uint64_t x[NUM_LIMBS], y[NUM_LIMBS], m[NUM_LIMBS], inv[NUM_LIMBS], expected[NUM_LIMBS], out[NUM_LIMBS];
       hexstr_to_bytearray((uint8_t*)x,argv[2]+2);
       hexstr_to_bytearray((uint8_t*)y,argv[3]+2);
       hexstr_to_bytearray((uint8_t*)m,argv[4]+2);
       hexstr_to_bytearray((uint8_t*)inv,argv[5]+2);
       hexstr_to_bytearray((uint8_t*)expected,argv[6]+2);
-      struct timespec requestStart, requestEnd;
-      clock_gettime(CLOCK_REALTIME, &requestStart);
+      struct timespec start, end;
+      clock_gettime(CLOCK_REALTIME, &start);
       for (int i=0; i<NUM_ITERS; i++)
-        FUNCNAME(mulmodmontSOS)(out,x,y,m,((UINT*)inv)[0]);
-      clock_gettime(CLOCK_REALTIME, &requestEnd);
-      double accum = ( requestEnd.tv_sec - requestStart.tv_sec )
-                 + ( requestEnd.tv_nsec - requestStart.tv_nsec )
-                 / 1E9;
-      if (NUM_ITERS>1) printf( "execution time: %lf s\n", accum );
+        biginth_mulmodmontSOS(out,x,y,m,((uint64_t*)inv)[0]);
+      clock_gettime(CLOCK_REALTIME, &end);
+      uint64_t accum = 1000000000 * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
+      if (NUM_ITERS>1) printf("%lf ns per iter\n",  accum/(double)NUM_ITERS);
       if (NUM_ITERS==1){
         int error=0;
         for (int i=0; i<NUM_LIMBS; i++){
@@ -410,21 +457,19 @@ int main(int argc, char** argv){
 	return -1;
       }
 
-      UINT x[NUM_LIMBS], y[NUM_LIMBS], m[NUM_LIMBS], inv[NUM_LIMBS], expected[NUM_LIMBS], out[NUM_LIMBS];
+      uint64_t x[NUM_LIMBS], y[NUM_LIMBS], m[NUM_LIMBS], inv[NUM_LIMBS], expected[NUM_LIMBS], out[NUM_LIMBS];
       hexstr_to_bytearray((uint8_t*)x,argv[2]+2);
       hexstr_to_bytearray((uint8_t*)y,argv[3]+2);
       hexstr_to_bytearray((uint8_t*)m,argv[4]+2);
       hexstr_to_bytearray((uint8_t*)inv,argv[5]+2);
       hexstr_to_bytearray((uint8_t*)expected,argv[6]+2);
-      struct timespec requestStart, requestEnd;
-      clock_gettime(CLOCK_REALTIME, &requestStart);
+      struct timespec start, end;
+      clock_gettime(CLOCK_REALTIME, &start);
       for (int i=0; i<NUM_ITERS; i++)
-        mulmodmontCIOSasm384(out,x,y,m,((UINT*)inv)[0]);
-      clock_gettime(CLOCK_REALTIME, &requestEnd);
-      double accum = ( requestEnd.tv_sec - requestStart.tv_sec )
-                 + ( requestEnd.tv_nsec - requestStart.tv_nsec )
-                 / 1E9;
-      if (NUM_ITERS>1) printf( "execution time: %lf s\n", accum );
+        mulmodmontCIOSasm384(out,x,y,m,((uint64_t*)inv)[0]);
+      clock_gettime(CLOCK_REALTIME, &end);
+      uint64_t accum = 1000000000 * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
+      if (NUM_ITERS>1) printf("%lf ns per iter\n",  accum/(double)NUM_ITERS);
       if (NUM_ITERS==1){
         int error=0;
         for (int i=0; i<NUM_LIMBS; i++){
@@ -443,13 +488,18 @@ int main(int argc, char** argv){
         return -1;
       }
 
-      UINT x[NUM_LIMBS], m[NUM_LIMBS], inv[NUM_LIMBS], expected[NUM_LIMBS], out[NUM_LIMBS];
+      uint64_t x[NUM_LIMBS], m[NUM_LIMBS], inv[NUM_LIMBS], expected[NUM_LIMBS], out[NUM_LIMBS];
       hexstr_to_bytearray((uint8_t*)x,argv[2]+2);
       hexstr_to_bytearray((uint8_t*)m,argv[3]+2);
       hexstr_to_bytearray((uint8_t*)inv,argv[4]+2);
       hexstr_to_bytearray((uint8_t*)expected,argv[5]+2);
+      struct timespec start, end;
+      clock_gettime(CLOCK_REALTIME, &start);
       for (int i=0; i<NUM_ITERS; i++)
-        FUNCNAME(montsquare)(out,x,m,((UINT*)inv)[0]);
+        biginth_montsquare(out,x,m,((uint64_t*)inv)[0]);
+      clock_gettime(CLOCK_REALTIME, &end);
+      uint64_t accum = 1000000000 * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
+      if (NUM_ITERS>1) printf("%lf ns per iter\n",  accum/(double)NUM_ITERS);
       if (NUM_ITERS==1){
         int error=0;
         for (int i=0; i<NUM_LIMBS; i++){
@@ -468,15 +518,20 @@ int main(int argc, char** argv){
 	return -1;
       }
 
-      UINT x[NUM_LIMBS], y[NUM_LIMBS], m[NUM_LIMBS], inv[NUM_LIMBS], expected[NUM_LIMBS], out[NUM_LIMBS];
+      uint64_t x[NUM_LIMBS], y[NUM_LIMBS], m[NUM_LIMBS], inv[NUM_LIMBS], expected[NUM_LIMBS], out[NUM_LIMBS];
       hexstr_to_bytearray((uint8_t*)x,argv[2]+2);
       hexstr_to_bytearray((uint8_t*)y,argv[3]+2);
       hexstr_to_bytearray((uint8_t*)m,argv[4]+2);
       hexstr_to_bytearray((uint8_t*)inv,argv[5]+2);
       hexstr_to_bytearray((uint8_t*)expected,argv[6]+2);
+      struct timespec start, end;
+      clock_gettime(CLOCK_REALTIME, &start);
       for (int i=0; i<NUM_ITERS; i++){
-        FUNCNAME(mulmodmont)(out,x,y,m,((UINT*)inv)[0]);
+        biginth_mulmodmont(out,x,y,m,((uint64_t*)inv)[0]);
       }
+      clock_gettime(CLOCK_REALTIME, &end);
+      uint64_t accum = 1000000000 * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
+      if (NUM_ITERS>1) printf("%lf ns per iter\n",  accum/(double)NUM_ITERS);
       if (NUM_ITERS==1){
         int error=0;
         for (int i=0; i<NUM_LIMBS; i++){
