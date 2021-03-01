@@ -143,6 +143,47 @@ def montgomery_reduction(out,T,m,minv,b,n):
   if less_than_or_equal(m,out,n):
     sub(out,out,m,b,n)
 
+# following the original [M85, section 2] notation and algorithm
+# this passed a few tests, needs more testing
+def REDC_multiprecision(T,N,Nprime,n):
+  # T is the bigint value to be reduced
+  # N is the bigint modulus
+  # Nprime is the 64-bit montgomery parameter
+  # n is the number of limbs of the modulus
+
+  b = 2**64   # the base
+
+  # convert inputs to limbs in base b, starting with least-significant limb
+  T_=[0]*(2*n+1)  # with extra limb for carries
+  for i in range(2*n):  T_[i] = T%b;  T = T//b
+  N_=[0]*n
+  for i in range(n):    N_[i] = N%b;  N = N//b
+
+  # main loop
+  c = 0
+  for i in range(n):
+    # from [M85]: (d T_{i+n-1} ... T_i)_b <- (0 T_{i+n-1} ... T_i)_b + N*(T_i*N' mod R)
+    TixNprime = (T_[i]*Nprime) % b
+    d = 0
+    for j in range(n):
+      temp = T_[i+j] + N_[j]*TixNprime + d
+      T_[i+j] = temp % b
+      d = temp // b
+    # from [M85]: (c T_{i+n})_b <- c + d + T_{i+n}
+    temp = c + d + T_[i+n]
+    T_[i+n] = temp % b
+    c = temp // b
+  T_[2*n] += c
+
+  # convert result T_ back to bigint, ignoring lowest n limbs
+  for i in range(n+1): T += T_[n+i] * b**i
+
+  # finally, subtract the modulus if we exceed it
+  if T>=N:
+    return T-N
+  else:
+    return T
+
 
 # algorithm 14.36, Handbook of Applied Cryptography, http://cacr.uwaterloo.ca/hac/about/chap14.pdf
 def montgomery_multiplication(out,x,y,m,minv,b,n):

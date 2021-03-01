@@ -322,7 +322,7 @@ int main(int argc, char** argv){
       }
     }
     else if (strcmp (argv[1],"mulmodmontCIOS") == 0 || strcmp (argv[1],"mulmodmont") == 0){
-      printf("testing montgomery multiplication\n");
+      //printf("testing montgomery multiplication\n");
       if (argc!=7){
         printf("./test_and_bench mulmodmont 0x<hex of x> 0x<hex of y> 0x<hex of mod> 0x<hex of modinv> 0x<hex of expected>\n");
 	return -1;
@@ -353,7 +353,7 @@ int main(int argc, char** argv){
         }
         if (!error){ printf("correct\n");}
       }
-      return out[0];
+      return 0; //out[0];
     }
     else if (strcmp (argv[1],"mulmodmontHAC") == 0){
       printf("testing montgomeryHAC multiplication\n");
@@ -385,7 +385,7 @@ int main(int argc, char** argv){
         }
         if (!error){ printf("correct\n");}
       }
-      return out[0];
+      return 0; //out[0];
     }
     else if (strcmp (argv[1],"mulmodmontFIOS") == 0){
       printf("testing montgomeryFIOS multiplication\n");
@@ -417,7 +417,7 @@ int main(int argc, char** argv){
         }
         if (!error){ printf("correct\n");}
       }
-      return out[0];
+      return 0; //out[0];
     }
     else if (strcmp (argv[1],"mulmodmontSOS") == 0){
       printf("testing montgomery multiplication SOS method\n");
@@ -528,6 +528,67 @@ int main(int argc, char** argv){
       clock_gettime(CLOCK_REALTIME, &start);
       for (int i=0; i<NUM_ITERS; i++){
         biginth_mulmodmont(out,x,y,m,((uint64_t*)inv)[0]);
+      }
+      clock_gettime(CLOCK_REALTIME, &end);
+      uint64_t accum = 1000000000 * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
+      if (NUM_ITERS>1) printf("%lf ns per iter\n",  accum/(double)NUM_ITERS);
+      if (NUM_ITERS==1){
+        int error=0;
+        for (int i=0; i<NUM_LIMBS; i++){
+          if(out[i]!=expected[i]){
+            printf("ERROR: out[%d]=%lx and expected[%d]=%lx\n",i,out[i],i,expected[i]);
+            error=1;
+          }
+        }
+        if (!error){ printf("correct\n");}
+      }
+    }
+    else if (strcmp (argv[1],"multiplicative_inverse") == 0){
+      printf("testing multiplicative_inverse\n");
+      if (argc!=5){
+        printf("./test_and_bench multiplicative_inverse 0x<hex of a> 0x<hex of m> 0x<hex of expected>\n");
+	return -1;
+      }
+
+      uint64_t a[NUM_LIMBS], m[NUM_LIMBS], expected[NUM_LIMBS], out[NUM_LIMBS];
+      hexstr_to_bytearray((uint8_t*)a,argv[2]+2);
+      hexstr_to_bytearray((uint8_t*)m,argv[3]+2);
+      hexstr_to_bytearray((uint8_t*)expected,argv[4]+2);
+      struct timespec start, end;
+      clock_gettime(CLOCK_REALTIME, &start);
+      printf("before multiplicative_inverse\n");
+      for (int i=0; i<NUM_ITERS; i++){
+        biginth_multiplicative_inverse(out,a,m,NUM_LIMBS);
+      }
+      printf("after multiplicative_inverse\n");
+      clock_gettime(CLOCK_REALTIME, &end);
+      uint64_t accum = 1000000000 * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
+      if (NUM_ITERS>1) printf("%lf ns per iter\n",  accum/(double)NUM_ITERS);
+      if (NUM_ITERS==1){
+        int error=0;
+        for (int i=0; i<NUM_LIMBS; i++){
+          if(out[i]!=expected[i]){
+            printf("ERROR: out[%d]=%lx and expected[%d]=%lx\n",i,out[i],i,expected[i]);
+            error=1;
+          }
+        }
+        if (!error){ printf("correct\n");}
+      }
+    }
+    else if (strcmp (argv[1],"compute_Nprime") == 0){
+      //printf("testing compute_Nprime\n");
+      if (argc!=4){
+        printf("./test_and_bench compute_Nprime 0x<hex of m> 0x<hex of expected>\n");
+	return -1;
+      }
+
+      uint64_t m[NUM_LIMBS], expected[NUM_LIMBS], out[NUM_LIMBS];
+      hexstr_to_bytearray((uint8_t*)m,argv[2]+2);
+      hexstr_to_bytearray((uint8_t*)expected,argv[3]+2);
+      struct timespec start, end;
+      clock_gettime(CLOCK_REALTIME, &start);
+      for (int i=0; i<NUM_ITERS; i++){
+        biginth_compute_Nprime(out,m,NUM_LIMBS);
       }
       clock_gettime(CLOCK_REALTIME, &end);
       uint64_t accum = 1000000000 * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;

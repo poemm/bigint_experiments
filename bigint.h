@@ -100,6 +100,7 @@ uint8_t biginth_less_than(const uint64_t* const x, const uint64_t* const y){
   return 0;
 }
 
+
 // checks whether x<=y
 uint8_t biginth_less_than_or_equal(const uint64_t* const x, const uint64_t* const y){
   for (int i=NUM_LIMBS-1;i>=0;i--){
@@ -110,6 +111,35 @@ uint8_t biginth_less_than_or_equal(const uint64_t* const x, const uint64_t* cons
   }
   // they are equal
   return 1;
+}
+
+
+// checks whether x!=0
+uint64_t biginth_is_nonzero(uint64_t* x){
+  uint64_t temp = 0;
+  #ifdef UNROLL
+    #pragma unroll
+  #endif
+  for (int i=0; i<NUM_LIMBS; i++){
+    temp |= x[i];
+  }
+  return temp;
+}
+
+
+// shifts a bigint number right by 1, preserving two's comlement signedness
+int biginth_right_shift_arithmetic_1(uint64_t* a){
+  // first limb gets arithmetic shift, so save it
+  uint64_t bottom_bit_to_top_bit = (a[NUM_LIMBS-1]>>63)<<63;
+  #ifdef UNROLL
+    #pragma unroll
+  #endif
+  for (int i=NUM_LIMBS-1;i>=0;i--){
+    uint64_t temp = a[i];
+    a[i]>>=1;
+    a[i]^=bottom_bit_to_top_bit;
+    bottom_bit_to_top_bit = temp<<63;
+  }
 }
 
 
@@ -213,6 +243,9 @@ void biginth_div(uint64_t* const q, uint64_t* const r, const uint64_t* const x, 
 
 }
 
+
+
+
 // algorithm 14.12, Handbook of Applied Cryptography, http://cacr.uwaterloo.ca/hac/about/chap14.pdf
 // but assume they both have the same number of limbs, this can be changed
 // out should have double the number of limbs as the inputs
@@ -242,6 +275,7 @@ void biginth_mul(uint64_t* const out, const uint64_t* const x, const uint64_t* c
   for (int i=0; i< 2*NUM_LIMBS; i++)
     out[i]=w[i];
 }
+
 
 // algorithm 14.16, Handbook of Applied Cryptography, http://cacr.uwaterloo.ca/hac/about/chap14.pdf
 // NUM_LIMBS is t (number of limbs) in the book, and the base is uint64_t*, usually uint32_t or uint64_t
@@ -534,9 +568,158 @@ void biginth_mulmodmontCIOS(uint64_t* const out, const uint64_t* const x, const 
     biginth_sub(out, out, m);
 }
 
+
 void biginth_mulmodmont(uint64_t* const out, const uint64_t* const x, const uint64_t* const y, const uint64_t* const m, const uint64_t inv){
   biginth_mulmodmontCIOS(out, x, y, m, inv);
 }
+
+
+// the folloiwng functions can't have NUM_LIMBS hardcoded since they set it as a variable
+#ifdef NUM_LIMBS
+#else
+
+// algorithm 14.61, Handbook of Applied Cryptography, http://cacr.uwaterloo.ca/hac/about/chap14.pdf
+// note: the last step is not implemented yet, but this is still useful for finding modular inverse
+void biginth_extended_gcd_binary_HAC(uint64_t* a, uint64_t* b, uint64_t* v, uint64_t* x, uint64_t* y, uint64_t n){
+  NUM_LIMBS = n;
+  uint64_t g = 0;       // book uses a bigint g, but we just keep track of number of doublings
+  while(biginth_is_nonzero(x) &&
+        biginth_is_nonzero(y) &&
+        x[0]%2==0 &&
+        y[0]%2==0){
+    biginth_right_shift_arithmetic_1(x);
+    biginth_right_shift_arithmetic_1(y);
+    g++;        // just keep track of number of doublings, will left shift v at end
+  }
+  uint64_t u[n];
+  for (int i=0; i<n; i++){
+    u[i]=x[i];
+    v[i]=y[i];
+  }
+  uint64_t A[n], B[n], C[n], D[n];
+  for (int i=0;i<n;i++) {
+    A[i]=0; B[i]=0; C[i]=0; D[i]=0;
+  }
+  A[0]=1; D[0]=1;
+  int iter=0;
+  int iter2=0;
+  int iter3=0;
+  int prev=0;
+  while (1){
+    while(u[0]%2==0){
+      biginth_right_shift_arithmetic_1(u);
+      if (A[0]%2==0 && B[0]%2==0){
+        biginth_right_shift_arithmetic_1(A);
+        biginth_right_shift_arithmetic_1(B);
+      }
+      else {
+        biginth_add(A,A,y);
+        biginth_right_shift_arithmetic_1(A);
+        biginth_sub(B,B,x);
+        biginth_right_shift_arithmetic_1(B);
+      }
+    }
+    while(v[0]%2==0){
+      biginth_right_shift_arithmetic_1(v);
+      if (C[0]%2==0 && D[0]%2==0){
+        biginth_right_shift_arithmetic_1(C);
+        biginth_right_shift_arithmetic_1(D);
+      }
+      else {
+        biginth_add(C,C,y);
+        biginth_right_shift_arithmetic_1(C);
+        biginth_sub(D,D,x);
+        biginth_right_shift_arithmetic_1(D);
+      }
+    }
+    if (biginth_less_than_or_equal(v,u)){
+      biginth_sub(u,u,v);
+      biginth_sub(A,A,C);
+      biginth_sub(B,B,D);
+    }
+    else{
+      biginth_sub(v,v,u);
+      biginth_sub(C,C,A);
+      biginth_sub(D,D,B);
+    }
+    if (!biginth_is_nonzero(u)){
+      for (int i=0;i<n;i++){
+        a[i] = C[i];
+        b[i] = D[i];
+      }
+      //left_shift(v,g,n);  // left_shift is not implemented yet, could do this as a bigint mul too
+      return;
+    }
+  }
+}
+
+
+// algorithm 14.64, Handbook of Applied Cryptography, http://cacr.uwaterloo.ca/hac/about/chap14.pdf
+// multiplicative inverse z st az=1 mod m
+// inverse exists iff gcd(a,mod)=1
+// note: this function doesn't work with NUM_LIMBS hard-coded, since 
+void biginth_multiplicative_inverse(uint64_t* out, uint64_t* a, uint64_t* m, uint64_t n){
+  uint64_t a_[n],v[n];
+  biginth_extended_gcd_binary_HAC(a_,out,v,m,a,n);
+  // if result is negative, add modulus
+  if (out[n-1]>>63==1){
+    biginth_add(out,out,m);
+  }
+}
+
+
+// Compute N' for montgomery multiplication
+// Recall montgomery multiplication uses identity RR^{-1} - NN' = 1, where N is an odd modulus and R is 2^{64*num_limbs_in_N}.
+// This function computes N' := (-N)^{-1} mod R.
+// wher -N is R-N, which we compute.
+uint64_t biginth_compute_Nprime(uint64_t* Nprime, uint64_t* mod, uint64_t n){
+  // assert that mod is odd
+
+  uint64_t original_NUM_LIMBS = NUM_LIMBS;
+
+  // mod may have fewer limbs than n, so find most significant limb index
+  uint64_t i;
+  for (i=n-1;i>=0;i--){
+    if (mod[i]!=0)
+      break;
+  }
+  n=i+1;
+
+  uint64_t R[n+1];
+  for(int i=0;i<n+1;i++)
+    R[i]=0;
+  R[n]=1;
+
+  // compute R - mod
+  // note: R uses an extra limb, so will give mod an extra limb too
+  uint64_t R_minus_mod[n+1];
+  uint64_t c=0;
+  for (int i=0; i<n; i++){
+    uint64_t temp = R[i]-c;
+    c = (temp<mod[i] || R[i]<c) ? 1:0;
+    R_minus_mod[i] = temp-mod[i];
+  }
+  R_minus_mod[n]=0;
+
+  uint64_t out[n+1];
+  biginth_multiplicative_inverse( out, R_minus_mod, R, n+1);
+  // Note: 14.61 says to add the modulus if the output is negative
+  // but we could just interpret it as unsigned (i.e. adding R does nothing)
+  // so could just call biginth_extended_gcd_binary_HAC() directly.
+  // but we ignore many optimizations like this for now
+
+  NUM_LIMBS = original_NUM_LIMBS;	// reset NUM_LIMBS, since gcd algorithm might have changed it
+
+  for(int i=0;i<n;i++)
+    Nprime[i] = out[i];
+
+  // return the number of limbs in mod, since may be useful for some applications.
+  return n;
+}
+
+#endif	// end of functions which can't have NUM_LIMBS hardcoded
+
+
 
 #undef uint128_t
 
