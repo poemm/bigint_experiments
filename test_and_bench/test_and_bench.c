@@ -18,6 +18,10 @@ and optionally compiled with flag
 #endif
 
 
+#ifdef VERBOSE
+#else
+  #define VERBOSE 1
+#endif
 
 
 
@@ -25,7 +29,7 @@ int main(int argc, char** argv){
 
   if (argc>1){
     if (strcmp(argv[1],"add") == 0){
-      printf("testing add\n");
+      if(VERBOSE) printf("testing add\n");
       if (argc!=5){
         printf("./test_and_bench add 0x<hex of x> 0x<hex of y> 0x<hex of expected>\n");
 	return -1;
@@ -54,7 +58,7 @@ int main(int argc, char** argv){
       }
     }
     else if (strcmp(argv[1],"addmod") == 0){
-      printf("testing addmod\n");
+      if(VERBOSE) printf("testing addmod\n");
       if (argc!=6){
         printf("./test_and_bench addmod 0x<hex of x> 0x<hex of y> 0x<hex of expected>\n");
 	return -1;
@@ -86,7 +90,7 @@ int main(int argc, char** argv){
       }
     }
     else if (strcmp (argv[1],"sub") == 0){
-      printf("testing sub\n");
+      if(VERBOSE) printf("testing sub\n");
       if (argc!=5){
         printf("./test_and_bench sub 0x<hex of x> 0x<hex of y> 0x<hex of expected>\n");
 	return -1;
@@ -115,7 +119,7 @@ int main(int argc, char** argv){
       }
     }
     else if (strcmp(argv[1],"submod") == 0){
-      printf("testing submod\n");
+      if(VERBOSE) printf("testing submod\n");
       if (argc!=6){
         printf("./test_and_bench submod 0x<hex of x> 0x<hex of y> 0x<hex of expected>\n");
 	return -1;
@@ -145,7 +149,7 @@ int main(int argc, char** argv){
       }
     }
     else if (strcmp (argv[1],"lessthan") == 0){
-      printf("testing less_than\n");
+      if(VERBOSE) printf("testing less_than\n");
       if (argc!=5){
         printf("./test_and_bench sub 0x<hex of x> 0x<hex of y> 0x<hex of expected>\n");
 	return -1;
@@ -172,7 +176,7 @@ int main(int argc, char** argv){
       }
     }
     else if (strcmp (argv[1],"lessthanequal") == 0){
-      printf("testing less_than_or_equal\n");
+      if(VERBOSE) printf("testing less_than_or_equal\n");
       if (argc!=5){
         printf("./test_and_bench less_than_or_equal 0x<hex of x> 0x<hex of y> 0x<hex of expected>\n");
 	return -1;
@@ -199,7 +203,7 @@ int main(int argc, char** argv){
       }
     }
     else if (strcmp (argv[1],"mul") == 0){
-      printf("testing mul\n");
+      if(VERBOSE) printf("testing mul\n");
       if (argc!=5){
         printf("./test_and_bench mul 0x<hex of x> 0x<hex of y> 0x<hex of expected>\n");
 	return -1;
@@ -228,7 +232,7 @@ int main(int argc, char** argv){
       }
     }
     else if (strcmp (argv[1],"div") == 0){
-      printf("testing div\n");
+      if(VERBOSE) printf("testing div\n");
       if (argc!=6){
         printf("./test_and_bench div 0x<hex of x> 0x<hex of y> 0x<hex of expected quotient> 0x<hex of expected remainder>\n");
 	return -1;
@@ -261,7 +265,7 @@ int main(int argc, char** argv){
       }
     }
     else if (strcmp (argv[1],"square") == 0){
-      printf("testing square\n");
+      if(VERBOSE) printf("testing square\n");
       if (argc!=4){
         printf("./test_and_bench square 0x<hex of x> 0x<hex of expected>\n");
 	return -1;
@@ -289,7 +293,7 @@ int main(int argc, char** argv){
       }
     }
     else if (strcmp (argv[1],"montreduce") == 0){
-      printf("testing montgomery reduce\n");
+      if(VERBOSE) printf("testing montgomery reduce\n");
       if (argc!=6){
         printf("./test_and_bench montreduce 0x<hex of x> 0x<hex of mod> 0x<hex of modinv> 0x<hex of expected>\n");
         return -1;
@@ -322,7 +326,7 @@ int main(int argc, char** argv){
       }
     }
     else if (strcmp (argv[1],"mulmodmontCIOS") == 0 || strcmp (argv[1],"mulmodmont") == 0){
-      //printf("testing montgomery multiplication\n");
+      if(VERBOSE) printf("testing montgomery multiplication\n");
       if (argc!=7){
         printf("./test_and_bench mulmodmont 0x<hex of x> 0x<hex of y> 0x<hex of mod> 0x<hex of modinv> 0x<hex of expected>\n");
 	return -1;
@@ -356,7 +360,7 @@ int main(int argc, char** argv){
       return 0; //out[0];
     }
     else if (strcmp (argv[1],"mulmodmontHAC") == 0){
-      printf("testing montgomeryHAC multiplication\n");
+      if(VERBOSE) printf("testing montgomeryHAC multiplication\n");
       if (argc!=7){
         printf("./test_and_bench mulmodmontHAC 0x<hex of x> 0x<hex of y> 0x<hex of mod> 0x<hex of modinv> 0x<hex of expected>\n");
 	return -1;
@@ -388,7 +392,7 @@ int main(int argc, char** argv){
       return 0; //out[0];
     }
     else if (strcmp (argv[1],"mulmodmontFIOS") == 0){
-      printf("testing montgomeryFIOS multiplication\n");
+      if(VERBOSE) printf("testing montgomeryFIOS multiplication\n");
       if (argc!=7){
         printf("./test_and_bench mulmodmontFIOS 0x<hex of x> 0x<hex of y> 0x<hex of mod> 0x<hex of modinv> 0x<hex of expected>\n");
 	return -1;
@@ -420,7 +424,7 @@ int main(int argc, char** argv){
       return 0; //out[0];
     }
     else if (strcmp (argv[1],"mulmodmontSOS") == 0){
-      printf("testing montgomery multiplication SOS method\n");
+      if(VERBOSE) printf("testing montgomery multiplication SOS method\n");
       if (argc!=7){
         printf("./test_and_bench mulmodmontSOS 0x<hex of x> 0x<hex of y> 0x<hex of mod> 0x<hex of modinv> 0x<hex of expected>\n");
 	return -1;
@@ -451,7 +455,7 @@ int main(int argc, char** argv){
       }
     }
     else if (strcmp (argv[1],"mulmodmont384_asm") == 0){
-      printf("testing montgomery multiplication 384-bit in assembly\n");
+      if(VERBOSE) printf("testing montgomery multiplication 384-bit in assembly\n");
       if (argc!=7){
         printf("./test_and_bench mulmodmont384_asm 0x<hex of x> 0x<hex of y> 0x<hex of mod> 0x<hex of modinv> 0x<hex of expected>\n");
 	return -1;
@@ -482,7 +486,7 @@ int main(int argc, char** argv){
       }
     }
     else if (strcmp (argv[1],"montsquare") == 0){
-      printf("testing montgomery square\n");
+      if(VERBOSE) printf("testing montgomery square\n");
       if (argc!=6){
         printf("./test_and_bench montsquare 0x<hex of x> 0x<hex of mod> 0x<hex of modinv> 0x<hex of expected>\n");
         return -1;
@@ -512,7 +516,7 @@ int main(int argc, char** argv){
       }
     }
     else if (strcmp (argv[1],"mulmod_oddmod") == 0){
-      printf("testing mulmod_oddmod\n");
+      if(VERBOSE) printf("testing mulmod_oddmod\n");
       if (argc!=7){
         printf("./test_and_bench mulmod_oddmod 0x<hex of x> 0x<hex of y> 0x<hex of mod> 0x<hex of modinv> 0x<hex of expected>\n");
 	return -1;
@@ -544,7 +548,7 @@ int main(int argc, char** argv){
       }
     }
     else if (strcmp (argv[1],"multiplicative_inverse") == 0){
-      printf("testing multiplicative_inverse\n");
+      if(VERBOSE) printf("testing multiplicative_inverse\n");
       if (argc!=5){
         printf("./test_and_bench multiplicative_inverse 0x<hex of a> 0x<hex of m> 0x<hex of expected>\n");
 	return -1;
@@ -556,11 +560,9 @@ int main(int argc, char** argv){
       hexstr_to_bytearray((uint8_t*)expected,argv[4]+2);
       struct timespec start, end;
       clock_gettime(CLOCK_REALTIME, &start);
-      printf("before multiplicative_inverse\n");
       for (int i=0; i<NUM_ITERS; i++){
         biginth_multiplicative_inverse(out,a,m,NUM_LIMBS);
       }
-      printf("after multiplicative_inverse\n");
       clock_gettime(CLOCK_REALTIME, &end);
       uint64_t accum = 1000000000 * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
       if (NUM_ITERS>1) printf("%lf ns per iter\n",  accum/(double)NUM_ITERS);
@@ -576,7 +578,7 @@ int main(int argc, char** argv){
       }
     }
     else if (strcmp (argv[1],"compute_Nprime") == 0){
-      //printf("testing compute_Nprime\n");
+      if(VERBOSE) printf("testing compute_Nprime\n");
       if (argc!=4){
         printf("./test_and_bench compute_Nprime 0x<hex of m> 0x<hex of expected>\n");
 	return -1;
@@ -589,6 +591,35 @@ int main(int argc, char** argv){
       clock_gettime(CLOCK_REALTIME, &start);
       for (int i=0; i<NUM_ITERS; i++){
         biginth_compute_Nprime(out,m,NUM_LIMBS);
+      }
+      clock_gettime(CLOCK_REALTIME, &end);
+      uint64_t accum = 1000000000 * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
+      if (NUM_ITERS>1) printf("%lf ns per iter\n",  accum/(double)NUM_ITERS);
+      if (NUM_ITERS==1){
+        int error=0;
+        for (int i=0; i<NUM_LIMBS; i++){
+          if(out[i]!=expected[i]){
+            printf("ERROR: out[%d]=%lx and expected[%d]=%lx\n",i,out[i],i,expected[i]);
+            error=1;
+          }
+        }
+        if (!error){ printf("correct\n");}
+      }
+    }
+    else if (strcmp (argv[1],"compute_Nprime_experimental") == 0){
+      if(VERBOSE) printf("testing compute_Nprime_experimental\n");
+      if (argc!=4){
+        printf("./test_and_bench compute_Nprime_experimental 0x<hex of m> 0x<hex of expected>\n");
+	return -1;
+      }
+
+      uint64_t m[NUM_LIMBS], expected[NUM_LIMBS], out[NUM_LIMBS];
+      hexstr_to_bytearray((uint8_t*)m,argv[2]+2);
+      hexstr_to_bytearray((uint8_t*)expected,argv[3]+2);
+      struct timespec start, end;
+      clock_gettime(CLOCK_REALTIME, &start);
+      for (int i=0; i<NUM_ITERS; i++){
+        biginth_compute_Nprime_experimental(out,m,NUM_LIMBS);
       }
       clock_gettime(CLOCK_REALTIME, &end);
       uint64_t accum = 1000000000 * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;

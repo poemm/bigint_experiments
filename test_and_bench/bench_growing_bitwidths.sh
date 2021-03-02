@@ -11,7 +11,7 @@ compiler=clang
 # the rest should not be modified unless you know what you are doing
 
 num_iters=100000
-extra="-O3 -march=native"
+extra="-O3 -march=native -DVERBOSE=0"
 
 # this is needed by test_and_bench.c, just leave it here
 asm_files=../asm/mulmodmont384.x86_64.S

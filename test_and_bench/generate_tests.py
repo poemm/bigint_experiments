@@ -420,6 +420,29 @@ def generate_compute_Nprime_tests(filename,execname,numtests,max_bits):
     f.write(command)
   f.close
 
+def generate_compute_Nprime_tests(filename,execname,numtests,max_bits):  
+  #print("generate_compute_Nprime_tests(",filename,execname,numtests,max_bits,")")
+  f = open(filename, 'a')
+  base=2**max_bits
+  for i in range(numtests):
+
+    # generate random mod
+    mod = 0
+    while(mod%2==0):
+      mod=random.randint(0,2**max_bits-1)
+    #print("mod",mod)
+
+    # use wikipedia notation
+    R = base; N=mod
+    Rprime = wikipedia_inverse(R,N)
+    Nprime = (R*Rprime-1)//N
+    assert R*Rprime - N*Nprime == 1     # Bézout's identity
+    # print command
+    command = execname+" compute_Nprime_experimental "+hex(mod)+" "+hex(Nprime)+"\n"
+
+    f.write(command)
+  f.close
+
 """
   def caseys_mulreduce256(self,other,modulus,inv):
     mask = 0xffffffffffffffffffffffffffffffff
@@ -501,6 +524,8 @@ if __name__ == "__main__":
     elif funcname=="multiplicative_inverse":
       generate_multiplicative_inverse_tests(filename,execname,numtests,max_bits)
     elif funcname=="compute_Nprime":
+      generate_compute_Nprime_tests(filename,execname,numtests,max_bits)
+    elif funcname=="compute_Nprime_experimental":
       generate_compute_Nprime_tests(filename,execname,numtests,max_bits)
     else:
       print("error: bad funcname:",funcname)

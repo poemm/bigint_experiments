@@ -671,6 +671,46 @@ void biginth_multiplicative_inverse(uint64_t* out, uint64_t* a, uint64_t* m, uin
 // Compute N' for montgomery multiplication
 // Recall montgomery multiplication uses identity RR^{-1} - NN' = 1, where N is an odd modulus and R is 2^{64*num_limbs_in_N}.
 // This function computes N' := (-N)^{-1} mod R.
+// Note: Need a source for this algorithm. Not sure if it works in all cases. But passed all tests I tried so far.
+void biginth_compute_Nprime_experimental(uint64_t* out, uint64_t* m, uint64_t num_limbs){
+  uint64_t old_NUM_LIMBS = NUM_LIMBS;
+  NUM_LIMBS=num_limbs;
+  // mod may have fewer limbs than n, so find most significant limb index
+  uint64_t i;
+  for (i=num_limbs-1;i>=0;i--){
+    if (m[i]!=0)
+      break;
+  }
+  num_limbs=i+1;
+  uint64_t x[2*num_limbs];
+  for (int i=0;i<2*num_limbs;i++)
+    x[i]=0;
+  x[0]=1;
+  uint64_t two[num_limbs];
+  for (int i=0;i<num_limbs;i++)
+    two[i]=0;
+  two[0]=2;
+  uint64_t num_bits = num_limbs*64;
+  uint64_t num_iters = 1;
+  while ( num_bits>>= 1) { num_iters++; }
+  uint64_t x_tmp[num_limbs];
+  for (int i=0;i<num_iters;i++){
+    for (int i=0;i<num_limbs;i++)
+      x_tmp[i]=x[i];
+    biginth_mul(x,x,m);
+    biginth_add(x,x,two);
+    biginth_mul(x,x,x_tmp);
+  }
+  for (int i=0;i<num_limbs;i++){
+    out[i]=x[i];
+  }
+  NUM_LIMBS=old_NUM_LIMBS;
+}
+
+
+// Compute N' for montgomery multiplication
+// Recall montgomery multiplication uses identity RR^{-1} - NN' = 1, where N is an odd modulus and R is 2^{64*num_limbs_in_N}.
+// This function computes N' := (-N)^{-1} mod R.
 // wher -N is R-N, which we compute.
 uint64_t biginth_compute_Nprime(uint64_t* Nprime, uint64_t* mod, uint64_t n){
   // assert that mod is odd
